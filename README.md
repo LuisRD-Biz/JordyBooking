@@ -7,6 +7,9 @@ con lugar acordado y eventos con contrato firmado registrado.
 ## Desarrollo local
 
 Para abrir el panel en Windows consulta [la guía del panel](docs/panel.md).
+La instalación local dispone del acceso directo **Jordy Studio**. Incluye CRM,
+cotizaciones versionadas, citas de firma, documentos privados y búsquedas paginadas.
+Consulta [cómo usar estas funciones](docs/crm-documents.md).
 
 Requisitos: Python 3.12+, uv y PostgreSQL con permiso para instalar `btree_gist`.
 Docker Compose es opcional si ya tienes PostgreSQL.
@@ -34,8 +37,8 @@ el set como recurso y requisito si solo puede utilizarlo una sesión a la vez.
 ## Verificación
 
 ```powershell
-uv run ruff check backend tests migrations
-uv run ruff format --check backend tests migrations
+uv run ruff check backend scripts tests migrations
+uv run ruff format --check backend scripts tests migrations
 # Base exclusiva de pruebas; el nombre debe terminar en _test.
 $env:TEST_DATABASE_URL = 'postgresql+psycopg://usuario:password@localhost:5432/jordy_test'
 uv run pytest -q
