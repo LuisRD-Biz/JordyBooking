@@ -2,16 +2,26 @@ import secrets
 from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.security import APIKeyHeader
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from jordy import services
+from jordy.auth import same_origin, valid_session
 from jordy.config import settings
 from jordy.db import get_session
 from jordy.domain import Conflict, RuleViolation, christmas_slots
-from jordy.models import Booking, Customer, Occupancy, Outbox, Package, Resource
+from jordy.models import (
+    AuditLog,
+    Booking,
+    Customer,
+    Occupancy,
+    Outbox,
+    Package,
+    Resource,
+    ResourceCapability,
+)
 from jordy.repository import available_resources, require
 from jordy.schemas import (
     ApprovalInput,
@@ -29,7 +39,11 @@ from jordy.schemas import (
 key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
 
 
-def authenticate(key: Annotated[str | None, Depends(key_header)]):
+def authenticate(request: Request, key: Annotated[str | None, Depends(key_header)]):
+    if valid_session(request):
+        if request.method not in {"GET", "HEAD", "OPTIONS"}:
+            same_origin(request)
+        return
     expected = settings().admin_api_key.get_secret_value()
     if key is None or not secrets.compare_digest(key.encode(), expected.encode()):
         raise HTTPException(status_code=401, detail="Acceso administrativo requerido.")
@@ -65,7 +79,7 @@ def resource_create(data: ResourceInput, session: DB):
 
 
 @router.get("/resources")
-def resources(session: DB, limit: Limit = 100):
+def resources(session: DB, limit: Limit = 100, offset: int = Query(0, ge=0)):
     return [
         {
             "id": r.id,
@@ -73,7 +87,7 @@ def resources(session: DB, limit: Limit = 100):
             "kind": r.kind,
             "capabilities": [c.capability for c in r.capabilities],
         }
-        for r in session.scalars(select(Resource).order_by(Resource.id).limit(limit))
+        for r in session.scalars(select(Resource).order_by(Resource.id).limit(limit).offset(offset))
     ]
 
 
@@ -94,10 +108,10 @@ def package_update(identity: int, data: PackageInput, session: DB):
 
 
 @router.get("/packages")
-def packages(session: DB, limit: Limit = 100):
+def packages(session: DB, limit: Limit = 100, offset: int = Query(0, ge=0)):
     return [
         {"id": p.id, "kind": p.kind, **services.snapshot(p)}
-        for p in session.scalars(select(Package).order_by(Package.id).limit(limit))
+        for p in session.scalars(select(Package).order_by(Package.id).limit(limit).offset(offset))
     ]
 
 
@@ -229,12 +243,13 @@ def block_create(data: BlockInput, session: DB):
 
 
 @router.get("/blocks")
-def blocks(session: DB, limit: Limit = 100):
+def blocks(session: DB, limit: Limit = 100, offset: int = Query(0, ge=0)):
     return session.scalars(
         select(Occupancy)
         .where(Occupancy.booking_id.is_(None), Occupancy.active.is_(True))
         .order_by(Occupancy.starts_at)
         .limit(limit)
+        .offset(offset)
     ).all()
 
 
@@ -252,3 +267,52 @@ def block_release(identity: int, session: DB):
 @router.get("/operations")
 def operations(session: DB, limit: Limit = 100):
     return session.scalars(select(Outbox).order_by(Outbox.id.desc()).limit(limit)).all()
+
+
+@router.put("/customers/{identity}")
+def customer_update(identity: int, data: CustomerInput, session: DB):
+    with session.begin():
+        customer = require(session, Customer, identity, lock=True)
+        customer.name, customer.contact = data.name, data.contact
+        services.audit(session, "customer.updated", identity)
+    return {"id": identity, **data.model_dump()}
+
+
+@router.put("/resources/{identity}")
+def resource_update(identity: int, data: ResourceInput, session: DB):
+    with session.begin():
+        resource = require(session, Resource, identity, lock=True)
+        active_roles = set(
+            session.scalars(
+                select(Occupancy.capability).where(
+                    Occupancy.resource_id == identity,
+                    Occupancy.active.is_(True),
+                    Occupancy.ends_at > services.now(),
+                    Occupancy.booking_id.is_not(None),
+                )
+            )
+        )
+        if active_roles and (
+            data.kind != resource.kind or not active_roles.issubset(data.capabilities)
+        ):
+            raise Conflict("No puedes quitar capacidades usadas en reservaciones vigentes.")
+        services.capabilities(session, data.capabilities)
+        resource.capabilities.clear()
+        session.flush()
+        resource.name, resource.kind = data.name, data.kind
+        resource.capabilities = [ResourceCapability(capability=c) for c in data.capabilities]
+        services.audit(session, "resource.updated", identity)
+    return {"id": identity, **data.model_dump()}
+
+
+@router.get("/bookings/{identity}/contract")
+def contract_get(identity: int, session: DB):
+    booking = require(session, Booking, identity)
+    if booking.contract is None:
+        return None
+    return {"reference": booking.contract.reference, "signed_at": booking.contract.signed_at}
+
+
+@router.get("/audit")
+def audit_list(session: DB, limit: Limit = 100):
+    return session.scalars(select(AuditLog).order_by(AuditLog.id.desc()).limit(limit)).all()

@@ -1,10 +1,12 @@
 # JordyBooking
 
-Primer entregable del MVP: API administrativa de disponibilidad y reservaciones con
-PostgreSQL real. Solicitudes pendientes no bloquean fechas; Jordy confirma sesiones
+Panel administrativo React y API de disponibilidad y reservaciones con PostgreSQL real.
+Solicitudes pendientes no bloquean fechas; Jordy confirma sesiones
 con lugar acordado y eventos con contrato firmado registrado.
 
 ## Desarrollo local
+
+Para abrir el panel en Windows consulta [la guía del panel](docs/panel.md).
 
 Requisitos: Python 3.12+, uv y PostgreSQL con permiso para instalar `btree_gist`.
 Docker Compose es opcional si ya tienes PostgreSQL.
@@ -49,8 +51,8 @@ Procesa un lote y marca `simulated`; no envía mensajes ni conecta calendarios.
 
 ## Alcance y siguientes pasos
 
-Este corte se usa mediante API/OpenAPI; el panel React y las cuentas de usuario son
-el siguiente entregable. No exponer esta versión a Internet. Calendario real, apartado
+Este corte incluye un panel React con sesión administrativa local. Las cuentas de usuario
+individuales están pendientes. No exponer esta versión a Internet. Calendario real, apartado
 navideño con vencimiento, recordatorios, portal de clientes e IA aún están pendientes.
 La firma se registra como referencia administrativa, no como firma electrónica.
 

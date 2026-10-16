@@ -1,12 +1,15 @@
 import logging
 from contextlib import asynccontextmanager
 from functools import lru_cache
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 
 from jordy.api import router
+from jordy.auth import router as auth_router
 from jordy.config import settings
 from jordy.db import build_engine
 from jordy.domain import Conflict, RuleViolation
@@ -29,6 +32,7 @@ async def lifespan(app):
 
 app = FastAPI(title="Jordy Studio — Reservaciones", version="0.1.0", lifespan=lifespan)
 app.include_router(router)
+app.include_router(auth_router)
 
 
 @app.get("/health")
@@ -48,3 +52,8 @@ async def integrity_error(request: Request, exc: IntegrityError):
     return JSONResponse(
         status_code=409, content={"detail": "Conflicto de integridad o disponibilidad."}
     )
+
+
+frontend = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if frontend.is_dir():
+    app.mount("/", StaticFiles(directory=frontend, html=True), name="panel")
