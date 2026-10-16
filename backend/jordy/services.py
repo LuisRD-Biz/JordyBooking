@@ -15,14 +15,17 @@ from jordy.domain import (
 from jordy.models import (
     AuditLog,
     Booking,
+    BookingDocument,
     Capability,
     Contract,
     Customer,
     IdempotencyRecord,
+    Lead,
     Occupancy,
     Outbox,
     Package,
     PackageRequirement,
+    Quote,
     Resource,
     ResourceCapability,
 )
@@ -97,7 +100,8 @@ def create_booking(session: Session, data: BookingInput, key: str):
     from sqlalchemy import text
 
     session.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"), {"key": key})
-    digest = hashlib.sha256(data.model_dump_json().encode()).hexdigest()
+    omitted = {field for field in ["new_customer", "quote_id"] if getattr(data, field) is None}
+    digest = hashlib.sha256(data.model_dump_json(exclude=omitted).encode()).hexdigest()
     prior = session.get(IdempotencyRecord, key)
     if prior:
         if prior.request_hash != digest:
@@ -105,18 +109,35 @@ def create_booking(session: Session, data: BookingInput, key: str):
         return require(session, Booking, prior.booking_id)
     if data.starts_at <= now():
         raise RuleViolation("La solicitud debe tener una fecha futura.")
-    require(session, Customer, data.customer_id)
+    from jordy.customers import save_customer
+
+    customer = (
+        save_customer(session, data.new_customer)
+        if data.new_customer
+        else require(session, Customer, data.customer_id)
+    )
+    quote = require(session, Quote, data.quote_id) if data.quote_id else None
+    lead = require(session, Lead, quote.lead_id, lock=True) if quote else None
     package = require(session, Package, data.package_id, lock=True)
     snap = snapshot(package)
+    if quote:
+        if lead.customer_id != customer.id or quote.package_id != package.id:
+            raise RuleViolation("La cotización no corresponde al contacto y paquete seleccionados.")
+        if lead.status in {"lost", "won", "pending_booking"}:
+            raise Conflict("La oportunidad está cerrada o ya tiene una solicitud en curso.")
+        snap = quote.snapshot.copy()
+        lead.status, lead.last_activity_at = "pending_booking", now()
     booking = Booking(
-        customer_id=data.customer_id,
+        customer_id=customer.id,
         package_id=package.id,
-        kind=package.kind,
+        kind=snap.get("kind", package.kind),
         starts_at=data.starts_at,
-        ends_at=data.starts_at + timedelta(minutes=package.duration_minutes),
+        ends_at=data.starts_at + timedelta(minutes=snap["duration_minutes"]),
         location=data.location,
         snapshot=snap,
+        quote_id=data.quote_id,
     )
+    customer.last_activity_at = now()
     session.add(booking)
     session.flush()
     session.add(IdempotencyRecord(key=key, request_hash=digest, booking_id=booking.id))
@@ -161,12 +182,19 @@ def approve(session: Session, identity: int, location: str):
     booking.location = location
     booking.status = "confirmed"
     booking.approved_at = now()
+    require(session, Customer, booking.customer_id).last_activity_at = now()
+    if booking.quote_id:
+        quote = require(session, Quote, booking.quote_id)
+        lead = require(session, Lead, quote.lead_id, lock=True)
+        lead.status, lead.last_activity_at = "won", now()
     audit(session, "booking.confirmed", booking.id)
     enqueue(session, booking, "confirmed")
     return booking
 
 
-def register_contract(session: Session, identity: int, reference: str, signed_at: datetime):
+def register_contract(
+    session: Session, identity: int, reference: str, signed_at: datetime, document_id=None
+):
     booking = require(session, Booking, identity, lock=True)
     if booking.kind != "event" or booking.status != "pending_approval":
         raise Conflict("Solo se registra contrato para eventos pendientes.")
@@ -174,7 +202,15 @@ def register_contract(session: Session, identity: int, reference: str, signed_at
         raise RuleViolation("La firma no puede estar fechada en el futuro.")
     if booking.contract:
         raise Conflict("Ya existe un contrato registrado; requiere revisión explícita.")
-    session.add(Contract(booking_id=identity, reference=reference, signed_at=signed_at))
+    if document_id:
+        document = session.get(BookingDocument, document_id)
+        if not document or document.booking_id != identity or document.document_type != "contract":
+            raise RuleViolation("Selecciona un contrato adjunto de esta misma reservación.")
+    session.add(
+        Contract(
+            booking_id=identity, reference=reference, signed_at=signed_at, document_id=document_id
+        )
+    )
     audit(session, "contract.recorded", identity)
 
 
@@ -188,6 +224,7 @@ def transition(session: Session, identity: int, target: str):
             update(Occupancy).where(Occupancy.booking_id == identity).values(active=False)
         )
     booking.status = target
+    require(session, Customer, booking.customer_id).last_activity_at = now()
     audit(session, f"booking.{target}", identity)
     enqueue(session, booking, target)
     return booking

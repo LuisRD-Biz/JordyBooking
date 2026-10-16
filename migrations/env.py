@@ -20,6 +20,9 @@ def run():
                 connection=connection,
                 target_metadata=Base.metadata,
                 version_table_schema=schema,
+                include_object=lambda obj, name, kind, reflected, compare: (
+                    name != "alembic_version"
+                ),
             )
             with context.begin_transaction():
                 context.run_migrations()

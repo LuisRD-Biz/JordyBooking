@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -14,7 +15,22 @@ class Input(BaseModel):
 
 class CustomerInput(Input):
     name: Name
-    contact: Annotated[str, Field(min_length=1, max_length=300)]
+    contact: Annotated[str, Field(max_length=300)] = ""
+    phone: Annotated[str | None, Field(min_length=7, max_length=40)] = None
+    email: Annotated[str | None, Field(max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")] = (
+        None
+    )
+    notes: Annotated[str, Field(max_length=4000)] = ""
+    featured: bool = False
+    duplicate_ack: bool = False
+
+    @model_validator(mode="after")
+    def has_contact(self):
+        if not (self.contact or self.phone or self.email):
+            raise ValueError("Indica teléfono o correo del contacto")
+        if self.phone and len("".join(c for c in self.phone if c.isdigit())) < 7:
+            raise ValueError("Teléfono no válido")
+        return self
 
 
 class ResourceInput(Input):
@@ -62,8 +78,16 @@ class AvailabilityInput(Input):
 
 
 class BookingInput(AvailabilityInput):
-    customer_id: int = Field(gt=0)
+    customer_id: int | None = Field(default=None, gt=0)
+    new_customer: CustomerInput | None = None
+    quote_id: int | None = Field(default=None, gt=0)
     location: Annotated[str | None, Field(min_length=1, max_length=500)] = None
+
+    @model_validator(mode="after")
+    def one_customer(self):
+        if (self.customer_id is None) == (self.new_customer is None):
+            raise ValueError("Selecciona un cliente existente o crea uno nuevo")
+        return self
 
 
 class ApprovalInput(Input):
@@ -73,6 +97,7 @@ class ApprovalInput(Input):
 class ContractInput(Input):
     reference: Annotated[str, Field(min_length=1, max_length=300)]
     signed_at: AwareDatetime
+    document_id: UUID | None = None
 
 
 class BlockInput(Input):

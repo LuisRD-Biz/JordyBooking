@@ -34,7 +34,7 @@ def setup(client, kind="session", buffer=30):
         "/api/customers",
         json={
             "name": "Cliente de prueba",
-            "contact": "synthetic@example.invalid",
+            "contact": f"synthetic-{uuid4().hex}@example.invalid",
         },
     ).json()["id"]
     package_data = {

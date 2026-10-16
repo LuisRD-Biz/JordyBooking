@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from jordy import services
 from jordy.auth import same_origin, valid_session
 from jordy.config import settings
+from jordy.customers import save_customer
 from jordy.db import get_session
 from jordy.domain import Conflict, RuleViolation, christmas_slots
 from jordy.models import (
@@ -57,11 +58,8 @@ Limit = Annotated[int, Query(ge=1, le=200)]
 @router.post("/customers", status_code=201)
 def customer_create(data: CustomerInput, session: DB):
     with session.begin():
-        customer = Customer(**data.model_dump())
-        session.add(customer)
-        session.flush()
-        services.audit(session, "customer.created", customer.id)
-        result = {"id": customer.id, **data.model_dump()}
+        customer = save_customer(session, data)
+        result = {"id": customer.id, **data.model_dump(exclude={"duplicate_ack"})}
     return result
 
 
@@ -200,7 +198,9 @@ def booking_approve(identity: int, data: ApprovalInput, session: DB):
 @router.post("/bookings/{identity}/contract", status_code=201)
 def booking_contract(identity: int, data: ContractInput, session: DB):
     with session.begin():
-        services.register_contract(session, identity, data.reference, data.signed_at)
+        services.register_contract(
+            session, identity, data.reference, data.signed_at, data.document_id
+        )
     return {"recorded": True, "notice": "Registro administrativo; no firma electrónica."}
 
 
@@ -273,8 +273,7 @@ def operations(session: DB, limit: Limit = 100):
 def customer_update(identity: int, data: CustomerInput, session: DB):
     with session.begin():
         customer = require(session, Customer, identity, lock=True)
-        customer.name, customer.contact = data.name, data.contact
-        services.audit(session, "customer.updated", identity)
+        save_customer(session, data, existing=customer)
     return {"id": identity, **data.model_dump()}
 
 
@@ -310,7 +309,11 @@ def contract_get(identity: int, session: DB):
     booking = require(session, Booking, identity)
     if booking.contract is None:
         return None
-    return {"reference": booking.contract.reference, "signed_at": booking.contract.signed_at}
+    return {
+        "reference": booking.contract.reference,
+        "signed_at": booking.contract.signed_at,
+        "document_id": booking.contract.document_id,
+    }
 
 
 @router.get("/audit")
