@@ -13,8 +13,9 @@
    cambios externos, conflictos y recuperación; después credenciales autorizadas.
 5. **CRM (implementado):** oportunidades, cotizaciones versionadas, citas administrativas,
    documentos privados, clasificación de contactos e historial de reservaciones.
-   Pendiente mensajería: conversaciones, webhooks deduplicados y transferencia humana;
-   APIs oficiales, con autorización para conectar servicios.
+   Mensajería implementada localmente: conversaciones, webhook aislado, deduplicación,
+   bandeja y envío manual con adaptador Graph. Pendiente: prueba real autorizada con Meta,
+   token nuevo, destinatario de prueba y túnel temporal. Ver [WhatsApp](whatsapp.md).
 6. **IA y portal:** extracción validada, evaluación y herramientas limitadas; acceso
    de cada cliente exclusivamente a sus recursos, probado desde backend.
 7. **Operación:** recordatorios con zona/consentimiento, métricas, rate limiting,

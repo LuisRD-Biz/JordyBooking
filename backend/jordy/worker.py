@@ -13,7 +13,7 @@ from jordy.services import now
 def process_batch(session: Session, provider: CalendarProvider, limit: int = 50) -> int:
     rows = session.scalars(
         select(Outbox)
-        .where(Outbox.status == "pending", Outbox.available_at <= now())
+        .where(Outbox.topic == "booking", Outbox.status == "pending", Outbox.available_at <= now())
         .order_by(Outbox.id)
         .limit(limit)
         .with_for_update(skip_locked=True)

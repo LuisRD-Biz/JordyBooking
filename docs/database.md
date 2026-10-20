@@ -22,6 +22,9 @@ erDiagram
     LEADS o|--o{ APPOINTMENTS : seguimiento
     BOOKINGS ||--o{ BOOKING_DOCUMENTS : adjunta
     BOOKING_DOCUMENTS o|--o| CONTRACTS : documenta
+    CUSTOMERS o|--o{ CONVERSATIONS : identidades_de_canal
+    CONVERSATIONS ||--o{ MESSAGES : historial
+    MESSAGES o|--o{ MESSAGE_RECEIPTS : correlacion_por_id_externo
 ```
 
 Clientes separados del acceso administrativo; trabajadores y equipos como recursos
@@ -43,6 +46,11 @@ operaciones pendientes con clave única, intentos, estado y próxima ejecución.
 `idempotency_records` conserva hash de solicitud y resultado dentro de la misma transacción.
 
 Primera migración explícita: `5e8d8dfa2f56`. No usa create_all en el arranque.
+
+Fase 4: migración aditiva `7b41c092a661` añade conversaciones/identidades, mensajes,
+recibos y `outbox.topic` (default `booking`). El vínculo de recibos se resuelve por
+cuenta/ID externo, sin FK obligatoria: pueden llegar antes del mensaje saliente.
+Unicidades, estados y recuperación se explican en [WhatsApp](whatsapp.md).
 No ejecutar downgrade sobre datos reales sin respaldo y autorización: elimina tablas.
 
 Segunda migración aditiva: `3f152243a93e`. Añade contactos estructurados, `leads`,

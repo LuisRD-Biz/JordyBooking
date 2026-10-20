@@ -17,6 +17,7 @@ from jordy.crm import router as crm_router
 from jordy.db import build_engine
 from jordy.documents import router as document_router
 from jordy.domain import Conflict, RuleViolation
+from jordy.messaging.api import router as messaging_router
 from jordy.repository import NotFound
 from jordy.search import router as search_router
 
@@ -41,6 +42,7 @@ app.include_router(auth_router)
 app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)
+app.include_router(messaging_router)
 
 
 @app.get("/health")

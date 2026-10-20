@@ -229,6 +229,9 @@ class AuditLog(Base):
 class Outbox(Base):
     __tablename__ = "outbox"
     id: Mapped[int] = mapped_column(primary_key=True)
+    topic: Mapped[str] = mapped_column(
+        String(40), default="booking", server_default="booking", index=True
+    )
     event_key: Mapped[str] = mapped_column(String(160), unique=True)
     payload: Mapped[dict] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(String(30), default="pending")
@@ -242,3 +245,61 @@ class IdempotencyRecord(Base):
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     request_hash: Mapped[str] = mapped_column(String(64))
     booking_id: Mapped[int] = mapped_column(ForeignKey("bookings.id"))
+
+
+class Conversation(Base):
+    """A channel identity owns one durable thread; customers can own many identities."""
+
+    __tablename__ = "conversations"
+    __table_args__ = (
+        UniqueConstraint("channel", "account_id", "external_contact"),
+        CheckConstraint("state IN ('human', 'closed')"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    channel: Mapped[str] = mapped_column(String(30))
+    account_id: Mapped[str] = mapped_column(String(100))
+    phone_number_id: Mapped[str] = mapped_column(String(100))
+    external_contact: Mapped[str] = mapped_column(String(200))
+    display_name: Mapped[str] = mapped_column(String(200))
+    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), index=True)
+    link_method: Mapped[str] = mapped_column(String(30))
+    state: Mapped[str] = mapped_column(String(20), default="human")
+    responsible: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_activity_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    last_incoming_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Message(Base):
+    __tablename__ = "messages"
+    __table_args__ = (
+        UniqueConstraint("channel", "account_id", "external_id"),
+        CheckConstraint("direction IN ('incoming', 'outgoing')"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    conversation_id: Mapped[int] = mapped_column(ForeignKey("conversations.id"), index=True)
+    channel: Mapped[str] = mapped_column(String(30))
+    account_id: Mapped[str] = mapped_column(String(100))
+    external_id: Mapped[str | None] = mapped_column(String(300))
+    request_key: Mapped[UUID | None] = mapped_column(unique=True)
+    request_hash: Mapped[str | None] = mapped_column(String(64))
+    direction: Mapped[str] = mapped_column(String(20))
+    kind: Mapped[str] = mapped_column(String(30))
+    body: Mapped[str | None] = mapped_column(String(4096))
+    details: Mapped[dict] = mapped_column(JSONB, default=dict)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(30))
+    error_code: Mapped[str | None] = mapped_column(String(80))
+
+
+class MessageReceipt(Base):
+    __tablename__ = "message_receipts"
+    __table_args__ = (UniqueConstraint("account_id", "external_id", "status", "occurred_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    account_id: Mapped[str] = mapped_column(String(100))
+    external_id: Mapped[str] = mapped_column(String(300), index=True)
+    recipient: Mapped[str] = mapped_column(String(200))
+    status: Mapped[str] = mapped_column(String(30))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(80))

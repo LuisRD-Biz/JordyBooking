@@ -61,3 +61,9 @@ La firma se registra como referencia administrativa, no como firma electrónica.
 
 Documentación: [requisitos](docs/requirements.md), [reglas](docs/business-rules.md),
 [arquitectura](docs/architecture.md), [modelo ER](docs/database.md), [roadmap](docs/roadmap.md).
+
+## WhatsApp — fase 4 local
+
+Bandeja **Mensajes**, receptor aislado y adaptador real preparados. La prueba con Meta
+y cualquier exposición/envío requieren autorización; envíos deshabilitados por defecto.
+[Configuración, inicio, seguridad y prueba acompañada](docs/whatsapp.md).

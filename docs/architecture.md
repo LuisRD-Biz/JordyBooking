@@ -38,7 +38,7 @@ limitación de solicitudes, políticas de sesión, observabilidad y despliegue r
 ## ADR 004 — Integraciones desacopladas
 
 Outbox guarda eventos junto con la reserva. Worker separado toma lotes con SKIP LOCKED,
-reintenta hasta cinco veces y aplica backoff. El único adaptador disponible es simulado;
+reintenta hasta cinco veces y aplica backoff. El adaptador de calendario es simulado;
 no ofrece sincronización, historial externo ni entrega real. Sus eventos contienen ID
 y acción, y el adaptador real deberá consultar la versión vigente de la reserva y
 resolver orden/versiones, idempotencia y reconciliación antes de conectarse.
@@ -83,3 +83,48 @@ El acceso directo usa `start-panel.ps1` → `launch_panel.py`, sin servicio perm
 El lanzador verifica el cluster y la revisión de Alembic, pero no inicializa ni migra.
 Un bloqueo de archivo impide arranques simultáneos. `/health/ready` comprueba la base,
 la revisión y el frontend, e identifica este checkout mediante un hash sin exponer rutas.
+
+
+## ADR 007 — Mensajería oficial con entrada aislada
+
+Se conserva el monolito y la misma outbox con discriminador de tema. La aplicación ASGI
+`jordy.messaging.webhook:app` solo expone GET/POST de Meta en loopback:8001; el panel
+permanece privado en :8000. Firma sobre bytes originales, persistencia antes de aceptar
+y procesamiento transaccional separado. El adaptador real Graph valida habilitación,
+cuenta, destinatario autorizado y ventana/plantilla antes de cada envío manual.
+Un intento incierto nunca se reenvía automáticamente. `accepted` no significa `delivered`.
+La identidad pertenece al canal/cuenta y se vincula a un cliente por teléfono único exacto
+o confirmación administrativa. No se crean reservaciones ni cotizaciones por mensajes.
+Ver [arquitectura, límites y operación de WhatsApp](whatsapp.md). Integración real pendiente
+de sustitución del token expuesto, exposición temporal autorizada y prueba con el usuario.
+
+## ADR 008 — Identidad entrante y destinatario de envío distintos (19 octubre 2026)
+
+La prueba del usuario confirmó que `wa_id` y `to` pueden diferir para su contacto de
+prueba mexicano. No se deduce una transformación por país ni se modifican conversaciones
+o clientes históricos. `WHATSAPP_RECIPIENT_BINDINGS` contiene asociaciones administrativas
+explícitas por WABA, Phone Number ID e identidad entrante. El destino de cada asociación
+debe seguir perteneciendo a `WHATSAPP_ALLOWED_RECIPIENTS`; asociar no autoriza.
+Sin asociación solo se conserva el comportamiento anterior cuando la identidad misma
+está expresamente autorizada. Asociaciones ambiguas o de otra cuenta no se aplican.
+
+La validación devuelve el destino exacto. Al encolar se conserva en `messages.details`
+y al despachar se compara nuevamente con la resolución vigente. No se enruta usando
+datos recibidos del contacto. React muestra el destino y puede enviar `expected_recipient`
+como comprobación de lo revisado, nunca como instrucción para elegir otro número.
+Se conserva la idempotencia de solicitudes existentes; su respuesta mantiene la ruta original.
+
+Cada trabajo nuevo conserva una revisión opaca de configuración, calculada con HMAC
+usando el token como clave y los ajustes de envío como contenido. No contiene el token.
+El procesador compara su revisión efectiva antes de contactar Meta: discrepancias
+de token, emisor, lista, asociación o política bloquean el trabajo sin reintento.
+Los archivos de configuración ahora se resuelven desde la raíz del repositorio; las
+variables de entorno mantienen prioridad y cada proceso conserva caché hasta reiniciarse.
+El panel muestra su revisión y el worker imprime solo su prefijo para poder compararlos.
+
+`SendPolicyViolation`, subtipo de `RuleViolation`, mantiene HTTP 422 y el `detail`
+legible del contrato administrativo. El worker almacena categorías específicas en
+`error_code`/`last_error`. El adaptador conserva solo estado HTTP y código numérico Meta,
+nunca su mensaje completo. Los callbacks se correlacionan por cuenta/ID de mensaje y
+por identidad observada o destino guardado al encolar, sin resolver alias dinámicamente.
+No se añade migración ni se actualizan mensajes históricos.
