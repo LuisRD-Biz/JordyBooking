@@ -1,4 +1,21 @@
-# Estado del proyecto — 20 de octubre de 2026
+# Estado del proyecto — 3 de noviembre de 2026
+
+## Web pública
+
+- `website/`: React/TypeScript/Vite independiente, diseño editorial adaptable,
+  servicios, portafolio filtrable con muestras identificadas, contacto configurable,
+  privacidad, 404, HTML prerenderizado, SEO, Open Graph y encabezados de seguridad.
+- Build validado y vista local revisada en escritorio y móvil. Rutas privadas 404.
+- Configuración preparada para Static Assets del Worker `young-moon-14a9`.
+- **Pendiente publicar:** Wrangler sin sesión; dominio verificado todavía con
+  Hello World y HTTPS 200. No se hizo push, merge ni cambio sobre main.
+- Faltan fotos autorizadas, contactos oficiales y revisión de privacidad.
+- CRM, backend y datos no modificados. Estado operativo anterior no revalidado.
+- Instrucciones: [website-deployment.md](website-deployment.md).
+
+---
+
+# Estado anterior — 20 de octubre de 2026
 
 ## Cierre de jornada
 

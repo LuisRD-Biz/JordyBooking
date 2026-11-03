@@ -1,4 +1,21 @@
-# Recuperación — miércoles 21 de octubre de 2026
+# Recuperación — 3 de noviembre de 2026
+
+Página pública implementada en `website/`, sobre `whatsapp-cloud-api`, sin tocar
+el CRM ni sus servicios. Build y comprobaciones locales correctos. Cambios sin
+commit/push; revisar `git status`. Wrangler no autenticado; **no desplegado**.
+`https://jordyflores.com` continúa con Hello World (200 HTTPS).
+
+Siguiente paso: seguir [website-deployment.md](website-deployment.md) para conectar
+GitHub al Worker existente `young-moon-14a9`, raíz `website`, rama indicada.
+También admite login y despliegue manual. No cambiar DNS ni publicar `frontend/`.
+Faltan fotografías autorizadas, contactos oficiales y revisión del aviso integral.
+La vista previa se inicia desde `website/` con `pnpm preview` (4174), después del build.
+El estado de servicios/credenciales de WhatsApp descrito abajo es histórico y no
+se ha vuelto a validar en esta sesión.
+
+---
+
+# Recuperación anterior — miércoles 21 de octubre de 2026
 
 Última revisión: cierre del 20/10, zona America/Mexico_City.
 Repositorio: `C:\Users\PC\Desktop\Jordy Booking\JordyBooking`.

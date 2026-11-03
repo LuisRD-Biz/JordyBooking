@@ -1,5 +1,16 @@
 # JordyBooking
 
+## Página pública de Jordy Flores
+
+La web de `jordyflores.com` vive en **`website/`**, independiente del panel.
+React + TypeScript + Vite; publicación estática en el Worker `young-moon-14a9`.
+Desde `website/`: `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm preview`.
+Consulta [despliegue en Cloudflare y edición de contenido](docs/website-deployment.md).
+Estado 03/11/2026: versión local lista; publicación pendiente de autenticación en
+Cloudflare y de subir los cambios autorizados a GitHub. El dominio aún muestra Hello World.
+
+## Administrador existente
+
 Panel administrativo React y API de disponibilidad y reservaciones con PostgreSQL real.
 Solicitudes pendientes no bloquean fechas; Jordy confirma sesiones
 con lugar acordado y eventos con contrato firmado registrado.
