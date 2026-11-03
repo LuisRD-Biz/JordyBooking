@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import logging
 from contextlib import asynccontextmanager
@@ -8,10 +9,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from jordy.api import router
 from jordy.auth import router as auth_router
+from jordy.commercial import recover_summaries
+from jordy.commercial import router as commercial_router
+from jordy.commercial_models import SummarySchedule
 from jordy.config import settings
 from jordy.crm import router as crm_router
 from jordy.db import build_engine
@@ -32,7 +37,34 @@ def get_engine():
 @asynccontextmanager
 async def lifespan(app):
     settings()  # Fail closed if no sufficiently strong administrative key is configured.
+
+    async def summaries():
+        while True:
+            try:
+                await asyncio.to_thread(recover_summaries, get_engine())
+            except Exception:
+                # No message text, SQL parameters or credentials in logs.
+                logger.warning("SUMMARY_RECOVERY_FAILED")
+                try:
+
+                    def record_failure():
+                        with Session(get_engine()) as session, session.begin():
+                            schedule = session.get(SummarySchedule, 1)
+                            if schedule:
+                                schedule.last_error = "SUMMARY_RECOVERY_FAILED"
+
+                    await asyncio.to_thread(record_failure)
+                except Exception:
+                    pass
+            await asyncio.sleep(60)
+
+    task = asyncio.create_task(summaries())
     yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
     get_engine().dispose()
 
 
@@ -43,6 +75,7 @@ app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)
 app.include_router(messaging_router)
+app.include_router(commercial_router)
 
 
 @app.get("/health")
@@ -88,6 +121,18 @@ async def integrity_error(request: Request, exc: IntegrityError):
     logger.warning("database_constraint_conflict", extra={"path": request.url.path})
     return JSONResponse(
         status_code=409, content={"detail": "Conflicto de integridad o disponibilidad."}
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def storage_error(request: Request, exc: SQLAlchemyError):
+    logger.warning("STORAGE_UNAVAILABLE")
+    return JSONResponse(
+        status_code=503,
+        content={
+            "code": "STORAGE_UNAVAILABLE",
+            "detail": "No se pudo consultar o guardar la información. Intenta de nuevo.",
+        },
     )
 
 

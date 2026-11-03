@@ -8,11 +8,12 @@ from sqlalchemy import func, or_, select, tuple_
 from sqlalchemy.orm import Session
 
 from jordy.api import authenticate
+from jordy.commercial_models import CommercialSignal
 from jordy.crm import serialize
 from jordy.db import get_session
 from jordy.domain import RuleViolation
 from jordy.messaging.config import messaging_settings
-from jordy.messaging.policy import ERRORS, SendPolicyViolation, resolve_recipient
+from jordy.messaging.policy import ERRORS, SendPolicyViolation, error_diagnostic, resolve_recipient
 from jordy.messaging.service import queue_reply
 from jordy.models import Conversation, Customer, Lead, Message, Outbox
 from jordy.repository import require
@@ -64,6 +65,19 @@ def config_status(session: DB):
         )
         .group_by(Outbox.status)
     ).all()
+    latest = session.scalar(
+        select(Message)
+        .join(Outbox, Outbox.payload["message_id"].as_integer() == Message.id)
+        .where(
+            Outbox.topic == "whatsapp.send",
+            Outbox.payload["send_config_revision"].as_string() == config.send_config_revision(),
+            Message.account_id == config.whatsapp_business_account_id,
+            Message.status.in_(["failed", "unknown", "accepted", "sent", "delivered", "read"]),
+        )
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .limit(1)
+    )
+    provider_review = error_diagnostic(latest.error_code) if latest else None
     return {
         "send_blockers": config.send_blockers(),
         "send_blocker_codes": config.send_blocker_codes(),
@@ -71,6 +85,13 @@ def config_status(session: DB):
         "error_labels": ERRORS,
         "templates": config.whatsapp_approved_templates,
         "jobs": dict(counts),
+        # A current-config failed attempt is a review item, not a live token check.
+        "provider_review": (
+            {**provider_review, "message_id": latest.id}
+            if provider_review
+            and provider_review["category"] in {"credential", "provider_temporary", "review"}
+            else None
+        ),
         "receiver_configured": bool(
             config.meta_app_secret.get_secret_value()
             and config.meta_webhook_verify_token.get_secret_value()
@@ -97,6 +118,26 @@ def conversation_dict(session, conversation):
         .limit(1)
     )
     result["last_message"] = serialize(last) if last else None
+    result["pending_signals"] = session.scalar(
+        select(func.count())
+        .select_from(CommercialSignal)
+        .where(
+            CommercialSignal.conversation_id == conversation.id,
+            CommercialSignal.review_state == "pending",
+        )
+    )
+    last_reply = session.scalar(
+        select(func.max(Message.occurred_at)).where(
+            Message.conversation_id == conversation.id,
+            Message.direction == "outgoing",
+            Message.status.in_(["accepted", "sent", "delivered", "read"]),
+        )
+    )
+    result["needs_reply"] = bool(
+        conversation.state == "human"
+        and conversation.last_incoming_at
+        and (not last_reply or last_reply < conversation.last_incoming_at)
+    )
     return result
 
 
@@ -175,9 +216,21 @@ def history(
     more = len(rows) > limit
     rows = rows[:limit]
     return {
-        "items": [serialize(row) for row in reversed(rows)],
+        "items": [message_dict(row) for row in reversed(rows)],
         "before": rows[-1].id if more else None,
     }
+
+
+def message_dict(message):
+    return {**serialize(message), "diagnostic": error_diagnostic(message.error_code)}
+
+
+@router.get("/conversations/{conversation_id}/messages/{message_id}")
+def original_message(conversation_id: int, message_id: int, session: DB):
+    row = require(session, Message, message_id)
+    if row.conversation_id != conversation_id:
+        raise RuleViolation("El mensaje pertenece a otra conversación.")
+    return message_dict(row)
 
 
 @router.patch("/conversations/{conversation_id}")

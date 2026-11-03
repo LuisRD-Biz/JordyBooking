@@ -1,5 +1,47 @@
 # WhatsApp Cloud API — preparación local, fase 4
 
+## Estado al cierre del 20/10/2026
+
+- Panel, receptor y worker: una instancia raíz de cada componente. Un túnel local
+  existente; no se abrió otro. Petición sin firma al receptor: 401 esperado.
+- Configuración local sin bloqueos declarados. Eso **no verifica** la credencial
+  ante Meta. El último intento guardado con esa misma revisión de configuración
+  presenta `http_401_meta_190`: revisión pendiente de la credencial privada.
+- Se conservaron cinco operaciones fallidas y su historial. No había trabajos
+  pendientes/sending/unknown en la consulta de cierre. No se reintentó ningún envío.
+- El historial también contiene un mensaje con estado entregado; no se realizó una
+  nueva prueba de entrega real durante este cierre.
+- No se modificó ningún `.env`, token, secreto ni permiso.
+
+### Diagnósticos en la interfaz
+
+| Código | Interpretación presentada |
+| --- | --- |
+| `http_400` | Meta rechazó ese intento; falta causa detallada en el registro antiguo. |
+| `send_policy_blocked` | Una validación bloqueó ese intento; no se puede reconstruir cuál a partir del código genérico. |
+| `http_401_meta_190` | Posible credencial inválida, caducada o revocada; revisar configuración privada. |
+| `http_429`, `http_5xx` | Fallo potencialmente temporal del proveedor en ese intento. No se reenvía. |
+| `provider_result_unknown` | Verificar recepción antes de repetir; no equivale a fallo seguro. |
+
+Cada mensaje conserva el código técnico en un desplegable. El total de errores
+históricos está en **Estado de WhatsApp**, sin alerta global de avería.
+Los faltantes efectivos de configuración sí se muestran por separado.
+
+Para avisar de **revisión pendiente del último intento**, se exige que su revisión
+de configuración coincida con la del panel y que pertenezca a la cuenta configurada.
+Un intento posterior aceptado/enviado/entregado/leído sustituye ese aviso. Cambiar
+la revisión evita presentar el fallo antiguo como diagnóstico de la nueva.
+Esto no comprueba vigencia ni permisos remotamente, y no asegura que un error antiguo
+esté resuelto. Los intentos anteriores sin revisión no generan ese aviso global.
+
+Referencia para contrastar manualmente: [errores de Meta WhatsApp](https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/).
+La consulta web de esta referencia y la guía Graph devolvió HTTP 429 durante el
+cierre; no se afirma haber verificado su contenido actualizado. El aviso es
+conservador, basado en la categoría OAuth y el código almacenado, no en una nueva
+comprobación de credenciales.
+
+## Historial de preparación
+
 **Actualización del 19 de octubre:** el usuario confirmó recepción real. Se corrigió
 la separación entre identidad entrante y destinatario de envío. Ver el
 [diagnóstico y configuración de la corrección](whatsapp-routing-fix.md).

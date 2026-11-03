@@ -10,7 +10,7 @@ type Field = {name: string, label: string, type?: string, value?: any, required?
 const empty: Store = {bookings: [], customers: [], packages: [], resources: [], blocks: [], operations: [], audit: []};
 const navigation = [
   ['overview','Vista general',LayoutDashboard], ['calendar','Agenda',CalendarDays], ['bookings','Reservaciones',ClipboardList],
-  ['messages','Mensajes',MessageCircle], ['crm','Oportunidades',ArrowUpRight], ['appointments','Citas y firmas',FileCheck2], ['customers','Clientes',Users], ['packages','Paquetes',Package], ['resources','Equipo y personal',Camera],
+  ['summary','Resumen diario',ClipboardList], ['messages','Mensajes',MessageCircle], ['crm','Oportunidades',ArrowUpRight], ['appointments','Citas y firmas',FileCheck2], ['customers','Clientes',Users], ['packages','Paquetes',Package], ['resources','Equipo y personal',Camera],
   ['christmas','Temporada navideña',Snowflake], ['activity','Actividad',Activity],
 ] as const;
 const labels: Record<string,string> = {pending_approval:'Por aprobar', confirmed:'Confirmada', cancelled:'Cancelada', completed:'Completada', pending:'Pendiente', failed:'Con error', simulated:'Simulada'};

@@ -1,5 +1,10 @@
 export async function api<T = any>(path: string, method = 'GET', body?: unknown, headers: Record<string,string> = {}): Promise<T> {
-  const response = await fetch(path, {method, credentials: 'same-origin', headers: {'Content-Type': 'application/json', ...headers}, body: body === undefined ? undefined : JSON.stringify(body)});
+  let response: Response;
+  try {
+    response = await fetch(path, {method, credentials: 'same-origin', headers: {'Content-Type': 'application/json', ...headers}, body: body === undefined ? undefined : JSON.stringify(body)});
+  } catch {
+    throw new Error('No se pudo conectar con el estudio. Comprueba que el panel esté iniciado.');
+  }
   if (!response.ok) {
     if (response.status === 401 && path.startsWith('/api/')) window.dispatchEvent(new Event('session-expired'));
     const error = await response.json().catch(() => ({detail: 'No se pudo conectar con el estudio.'}));
