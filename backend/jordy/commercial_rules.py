@@ -80,9 +80,7 @@ def detect(body, occurred_at, timezone):
         pattern = r"\b(\d{1,2}) de (" + "|".join(MONTHS) + r")(?: (?:de |del )?(\d{4}))?\b"
         dates = list(re.finditer(pattern, text))
         dates += list(re.finditer(r"\b(\d{4})-(\d{2})-(\d{2})\b", text))
-        dates += list(re.finditer(
-            r"(?<![\d/-])\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b", text
-        ))
+        dates += list(re.finditer(r"(?<![\d/-])\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b", text))
         for item in dates:
             mentioned = None
             try:
