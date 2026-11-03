@@ -1,3 +1,19 @@
+# Reorganización Git/CI — 3 de noviembre de 2026
+
+Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.
+Ramas preparadas: `feature/project-baseline` desde `0d9d1e2` y `feature/website`
+desde `543b1dd`. Primero revisar/integrar base con merge commit, después cambiar
+el destino del PR web a `main` y revisar/integrar. No se fusiona en esta tarea.
+Backend: 136 pruebas locales correctas con PostgreSQL aislado, Ruff y build del panel.
+CI web: instalación congelada, TypeScript, build, auditoría y rutas de Workers local.
+No se modifican migraciones ni servicios WhatsApp. No se despliega producción.
+Cloudflare: rama de producción `main`, raíz `website`, assets `dist`; conexión
+y protección de main pendientes de aprobación/configuración. No crear develop.
+Ver `website-deployment.md` y los PR para resultados remotos; estados anteriores
+a continuación se conservan como antecedentes, no instrucciones actuales.
+
+---
+
 # Recuperación — 3 de noviembre de 2026
 
 Página pública implementada en `website/`, sobre `whatsapp-cloud-api`, sin tocar

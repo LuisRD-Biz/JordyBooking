@@ -1,6 +1,14 @@
 # Página pública — jordyflores.com
 
-## Estado al 3 de noviembre de 2026
+## Política vigente tras reorganización
+
+**No desplegar todavía.** Producción exclusivamente desde `main`, después de
+aprobar e integrar los dos PR. Directorio del build: `website/dist`; Worker
+`young-moon-14a9`. Se conservan dominio, HTTPS y DNS. Configuración manual pendiente.
+Consultar [CI/CD](ci-cd.md) y [flujo de contribución](../CONTRIBUTING.md) tras integrar la base.
+El bloque siguiente conserva el estado anterior como antecedente.
+
+## Estado inicial de la web — 3 de noviembre de 2026 (antecedente)
 
 Implementada en `website/`, rama `whatsapp-cloud-api`. No se hizo commit, push,
 merge ni despliegue. Wrangler no está autenticado. El dominio continúa sirviendo
@@ -36,8 +44,9 @@ Los tipos de letra se sirven localmente; no hay solicitudes a Google Fonts.
 
 ## Publicación mediante GitHub (preferida)
 
-Primero revisar y guardar estos cambios en la rama `whatsapp-cloud-api` y subirlos
-a GitHub cuando el propietario lo autorice. Esta tarea no ha realizado ese push.
+Primero integrar con revisión el PR de la base en `main` y después el PR
+`feature/website`. La web original ya está en GitHub en `543b1dd`; no conectar
+la rama histórica ni una rama feature al Worker de producción.
 
 1. Iniciar sesión en la cuenta de Cloudflare propietaria de `jordyflores.com`.
 2. Abrir **Workers & Pages → young-moon-14a9**. Comprobar que es el Worker del
@@ -51,7 +60,7 @@ a GitHub cuando el propietario lo autorice. Esta tarea no ha realizado ese push.
 
    | Campo | Valor |
    | --- | --- |
-   | Production branch | `whatsapp-cloud-api` |
+   | Production branch | `main` |
    | Root directory | `website` |
    | Build command | `pnpm install --frozen-lockfile && pnpm build` |
    | Deploy command | `pnpm exec wrangler deploy` |
@@ -59,7 +68,7 @@ a GitHub cuando el propietario lo autorice. Esta tarea no ha realizado ese push.
    | pnpm | `11.25.0`, declarado en `packageManager` |
 
 5. Si se ofrece un comando para ramas no productivas, mantenerlas sin despliegue
-   automático inicialmente. No apuntar otras ramas ni `main` al Worker de producción.
+   automático inicialmente. Solo `main` puede apuntar al Worker de producción. Desactivar builds de ramas no productivas.
 6. Usar la autenticación de despliegue administrada por Cloudflare Builds. No copiar
    tokens al código, `.env` público o variables `VITE_*`/`PUBLIC_WEBSITE_*`.
 7. Ejecutar el primer build. La configuración `wrangler.jsonc` selecciona el Worker
@@ -70,8 +79,14 @@ a GitHub cuando el propietario lo autorice. Esta tarea no ha realizado ese push.
    imágenes, tipografía, móvil, HTTPS y encabezados. Confirmar que el dominio sigue
    asociado al mismo Worker. Solo entonces considerar publicada esta versión.
 
-Una vez conectada la rama, cada push autorizado a ella puede publicar cambios.
-Configurar filtros de rutas `website/**` si se desean evitar builds por cambios del CRM.
+Una vez conectada `main`, cada integración que afecte la web puede publicar cambios.
+En Settings → Builds → Build watch paths, incluir `website/*` (patrón documentado
+por Cloudflare, relativo al repositorio y con coincidencia de subrutas). Así un
+cambio solo en backend o documentación no despliega la web. Si se añaden herramientas
+compartidas usadas en el build, incluir sus rutas también. Comprobar el primer
+build manualmente: el filtro puede omitirse en un primer build o cambios de configuración.
+No usar Actions y Cloudflare como dos publicadores simultáneos. Actions valida;
+Cloudflare Builds publica después de integrar código aprobado en main.
 
 Documentación oficial: [conectar un Worker existente a GitHub](https://developers.cloudflare.com/workers/ci-cd/builds/),
 [configuración de Builds](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/),
@@ -79,7 +94,8 @@ Documentación oficial: [conectar un Worker existente a GitHub](https://develope
 
 ## Alternativa: despliegue manual
 
-Desde `website/`, después de revisar el Worker y su dominio como se describe arriba:
+Solo con autorización de publicación adicional, desde un checkout limpio de `main`
+con los dos PR integrados, dentro de `website/`, después de revisar el Worker y dominio:
 
 ```powershell
 pnpm exec wrangler login

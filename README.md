@@ -6,8 +6,10 @@ La web de `jordyflores.com` vive en **`website/`**, independiente del panel.
 React + TypeScript + Vite; publicación estática en el Worker `young-moon-14a9`.
 Desde `website/`: `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm preview`.
 Consulta [despliegue en Cloudflare y edición de contenido](docs/website-deployment.md).
-Estado 03/11/2026: versión local lista; publicación pendiente de autenticación en
-Cloudflare y de subir los cambios autorizados a GitHub. El dominio aún muestra Hello World.
+Web original guardada en `543b1dd`. Integración mediante dos PR: base y después web.
+Producción únicamente desde `main`; Cloudflare todavía no se activa.
+Consulta [contribuciones](CONTRIBUTING.md), [CI/CD](docs/ci-cd.md) y
+[la integración inicial](docs/git-integration.md) al integrar la base.
 
 ## Administrador existente
 
