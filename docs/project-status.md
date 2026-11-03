@@ -1,6 +1,13 @@
 # Reorganización Git/CI — 3 de noviembre de 2026
 
 Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.
+Ramas publicadas en GitHub con autorización explícita del usuario.
+[PR #1 — base](https://github.com/LuisRD-Biz/JordyBooking/pull/1), commit `ac45671`;
+[PR #2 — web, borrador dependiente](https://github.com/LuisRD-Biz/JordyBooking/pull/2),
+commit funcional `22ab5c2` sobre web original `543b1dd`. CI remoto de #1 correcto
+(frontend, test, security); consultar #2 para el resultado de su ejecución vigente.
+`main` verificada sin protección (`protected: false`), sin modificar reglas.
+
 Ramas preparadas: `feature/project-baseline` desde `0d9d1e2` y `feature/website`
 desde `543b1dd`. Primero revisar/integrar base con merge commit, después cambiar
 el destino del PR web a `main` y revisar/integrar. No se fusiona en esta tarea.
