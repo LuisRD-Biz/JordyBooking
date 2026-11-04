@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, inspect, text
@@ -18,12 +19,29 @@ def test_upgrade_downgrade_upgrade_isolated_schema(database, monkeypatch):
         settings.cache_clear()
         try:
             config = Config("alembic.ini")
-            command.upgrade(config, "head")
+            # Earlier migrations support rollback when the database is empty.
+            command.upgrade(config, "7b41c092a661")
             assert "resource_occupancies" in inspect(engine).get_table_names(schema=schema)
             command.downgrade(config, "base")
             assert "bookings" not in inspect(engine).get_table_names(schema=schema)
             command.upgrade(config, "head")
             assert "bookings" in inspect(engine).get_table_names(schema=schema)
+            # Commercial history deliberately cannot be removed by downgrade.
+            with engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "INSERT INTO daily_summaries (day, timezone, content, generated_at) "
+                        "VALUES ('2026-01-01', 'America/Mexico_City', '{}', now())"
+                    )
+                )
+            with pytest.raises(RuntimeError, match="Destructive downgrade disabled"):
+                command.downgrade(config, "base")
+            with engine.connect() as connection:
+                assert connection.scalar(text("SELECT count(*) FROM daily_summaries")) == 1
+                assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
+                    "9c51e760ab12"
+                )
+            command.upgrade(config, "head")
         finally:
             engine.dispose()
             with database.begin() as connection:
