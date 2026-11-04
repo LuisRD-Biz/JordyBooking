@@ -1,4 +1,44 @@
-# Estado del proyecto — 20 de octubre de 2026
+# Reorganización Git/CI — 3 de noviembre de 2026
+
+Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.
+Ramas publicadas en GitHub con autorización explícita del usuario.
+[PR #1 — base](https://github.com/LuisRD-Biz/JordyBooking/pull/1), commit `ac45671`;
+[PR #2 — web, borrador dependiente](https://github.com/LuisRD-Biz/JordyBooking/pull/2),
+commit funcional `22ab5c2` sobre web original `543b1dd`. CI remoto de #1 correcto
+(frontend, test, security); consultar #2 para el resultado de su ejecución vigente.
+`main` verificada sin protección (`protected: false`), sin modificar reglas.
+
+Ramas preparadas: `feature/project-baseline` desde `0d9d1e2` y `feature/website`
+desde `543b1dd`. Primero revisar/integrar base con merge commit, después cambiar
+el destino del PR web a `main` y revisar/integrar. No se fusiona en esta tarea.
+Backend: 136 pruebas locales correctas con PostgreSQL aislado, Ruff y build del panel.
+CI web: instalación congelada, TypeScript, build, auditoría y rutas de Workers local.
+No se modifican migraciones ni servicios WhatsApp. No se despliega producción.
+Cloudflare: rama de producción `main`, raíz `website`, assets `dist`; conexión
+y protección de main pendientes de aprobación/configuración. No crear develop.
+Ver `website-deployment.md` y los PR para resultados remotos; estados anteriores
+a continuación se conservan como antecedentes, no instrucciones actuales.
+
+---
+
+# Estado del proyecto — 3 de noviembre de 2026
+
+## Web pública
+
+- `website/`: React/TypeScript/Vite independiente, diseño editorial adaptable,
+  servicios, portafolio filtrable con muestras identificadas, contacto configurable,
+  privacidad, 404, HTML prerenderizado, SEO, Open Graph y encabezados de seguridad.
+- Build validado y vista local revisada en escritorio y móvil. Rutas privadas 404.
+- Configuración preparada para Static Assets del Worker `young-moon-14a9`.
+- **Pendiente publicar:** Wrangler sin sesión; dominio verificado todavía con
+  Hello World y HTTPS 200. No se hizo push, merge ni cambio sobre main.
+- Faltan fotos autorizadas, contactos oficiales y revisión de privacidad.
+- CRM, backend y datos no modificados. Estado operativo anterior no revalidado.
+- Instrucciones: [website-deployment.md](website-deployment.md).
+
+---
+
+# Estado anterior — 20 de octubre de 2026
 
 ## Cierre de jornada
 
