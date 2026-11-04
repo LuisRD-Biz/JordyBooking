@@ -1,5 +1,18 @@
 # JordyBooking
 
+## Página pública de Jordy Flores
+
+La web de `jordyflores.com` vive en **`website/`**, independiente del panel.
+React + TypeScript + Vite; publicación estática en el Worker `young-moon-14a9`.
+Desde `website/`: `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm preview`.
+Consulta [despliegue en Cloudflare y edición de contenido](docs/website-deployment.md).
+Web original guardada en `543b1dd`. Integración mediante dos PR: base y después web.
+Producción únicamente desde `main`; Cloudflare todavía no se activa.
+Consulta [contribuciones](CONTRIBUTING.md), [CI/CD](docs/ci-cd.md) y
+[la integración inicial](docs/git-integration.md) al integrar la base.
+
+## Administrador existente
+
 Panel administrativo React y API de disponibilidad y reservaciones con PostgreSQL real.
 Solicitudes pendientes no bloquean fechas; Jordy confirma sesiones
 con lugar acordado y eventos con contrato firmado registrado.

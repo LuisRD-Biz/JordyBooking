@@ -1,4 +1,44 @@
-# Recuperación — miércoles 21 de octubre de 2026
+# Reorganización Git/CI — 3 de noviembre de 2026
+
+Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.
+Ramas publicadas en GitHub con autorización explícita del usuario.
+[PR #1 — base](https://github.com/LuisRD-Biz/JordyBooking/pull/1), commit `ac45671`;
+[PR #2 — web, borrador dependiente](https://github.com/LuisRD-Biz/JordyBooking/pull/2),
+commit funcional `22ab5c2` sobre web original `543b1dd`. CI remoto de #1 correcto
+(frontend, test, security); consultar #2 para el resultado de su ejecución vigente.
+`main` verificada sin protección (`protected: false`), sin modificar reglas.
+
+Ramas preparadas: `feature/project-baseline` desde `0d9d1e2` y `feature/website`
+desde `543b1dd`. Primero revisar/integrar base con merge commit, después cambiar
+el destino del PR web a `main` y revisar/integrar. No se fusiona en esta tarea.
+Backend: 136 pruebas locales correctas con PostgreSQL aislado, Ruff y build del panel.
+CI web: instalación congelada, TypeScript, build, auditoría y rutas de Workers local.
+No se modifican migraciones ni servicios WhatsApp. No se despliega producción.
+Cloudflare: rama de producción `main`, raíz `website`, assets `dist`; conexión
+y protección de main pendientes de aprobación/configuración. No crear develop.
+Ver `website-deployment.md` y los PR para resultados remotos; estados anteriores
+a continuación se conservan como antecedentes, no instrucciones actuales.
+
+---
+
+# Recuperación — 3 de noviembre de 2026
+
+Página pública implementada en `website/`, sobre `whatsapp-cloud-api`, sin tocar
+el CRM ni sus servicios. Build y comprobaciones locales correctos. Cambios sin
+commit/push; revisar `git status`. Wrangler no autenticado; **no desplegado**.
+`https://jordyflores.com` continúa con Hello World (200 HTTPS).
+
+Siguiente paso: seguir [website-deployment.md](website-deployment.md) para conectar
+GitHub al Worker existente `young-moon-14a9`, raíz `website`, rama indicada.
+También admite login y despliegue manual. No cambiar DNS ni publicar `frontend/`.
+Faltan fotografías autorizadas, contactos oficiales y revisión del aviso integral.
+La vista previa se inicia desde `website/` con `pnpm preview` (4174), después del build.
+El estado de servicios/credenciales de WhatsApp descrito abajo es histórico y no
+se ha vuelto a validar en esta sesión.
+
+---
+
+# Recuperación anterior — miércoles 21 de octubre de 2026
 
 Última revisión: cierre del 20/10, zona America/Mexico_City.
 Repositorio: `C:\Users\PC\Desktop\Jordy Booking\JordyBooking`.
