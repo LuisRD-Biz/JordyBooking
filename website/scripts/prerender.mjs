@@ -1,18 +1,11 @@
 import {access, readFile, writeFile, mkdir, rm} from 'node:fs/promises';
-import {render, publicPhotos, validateContacts} from '../.build/prerender.js';
+import {render, publicPhotos, validateManifest, validateContacts} from '../.build/prerender.js';
 
 validateContacts();
-const ids = new Set();
-for (const photo of publicPhotos()) {
-  if (ids.has(photo.id) || !photo.widths.length || photo.width <= 0 || photo.height <= 0) {
-    throw new Error(`Ficha fotográfica inválida: ${photo.id}`);
-  }
-  ids.add(photo.id);
-  if (photo.src && (!/^\/media\/[a-zA-Z0-9_./-]+\.(avif|webp|jpe?g|png)$/.test(photo.src) || photo.src.includes('..') || !photo.alt.trim())) {
-    throw new Error(`Imagen no válida o sin texto alternativo: ${photo.id}`);
-  }
+const photos = publicPhotos();
+validateManifest(photos);
+for (const photo of photos.filter(p => p.visible)) {
   for (const width of photo.widths) {
-    if (!Number.isInteger(width) || width <= 0) throw new Error('Ancho de variante inválido');
     await access(new URL(`../dist${photo.base}-${width}.webp`, import.meta.url));
   }
 }
