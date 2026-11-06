@@ -114,32 +114,13 @@ del mismo Worker para recuperar esa versión y comprobar nuevamente el dominio.
 
 ## Actualizar textos, fotos y contacto
 
-- `website/src/content.ts`: marca, descripción, servicios, categorías y contactos.
-  Los canales vacíos permanecen ocultos. WhatsApp requiere URL `https://wa.me/`
-  seguida del número comercial internacional confirmado; redes requieren URL HTTPS
-  del perfil oficial; correo requiere únicamente la dirección real. Son datos
-  públicos, nunca tokens de WhatsApp Cloud API.
-- `website/src/App.tsx`: textos complementarios, secciones y nota de privacidad.
-- `website/src/style.css`: composición, colores y adaptación móvil.
-- Fotografías autorizadas en `website/public/media/`. Usar WebP/AVIF optimizado
-  (como orientación: 1600 px en el lado largo, aproximadamente 150–350 KB), quitar
-  metadatos GPS y confirmar permisos de publicación de las personas retratadas.
-  En `hero` y `photographs`, reemplazar `src: null` por `/media/nombre.webp`,
-  completar `alt` descriptivo, título, categoría y dimensiones reales. Mantener
-  `aspect` acorde al encuadre. No usar rutas locales del PC ni enlaces privados.
-- Al sustituir todas las muestras, actualizar el aviso de portafolio de `App.tsx`.
-  Si quedan muestras, conservar su identificación explícita. Los marcadores
-  actuales son composiciones abstractas originales, no fotografías de clientes.
-- SEO en `index.html`, metadatos por ruta en `scripts/prerender.mjs`, imagen social
-  en `public/og-image.png` (1200×630), rutas públicas en `public/sitemap.xml`.
-- Repetir `pnpm build` y revisar localmente antes de cada publicación autorizada.
+- Editar navegación y destinos de contacto en `website/src/content.ts`. La política de privacidad sigue en `website/src/App.tsx`.
+- Las colecciones, los paquetes y la presentación editorial están en `website/src/Editorial.tsx`.
+- Para sustituir fotografías, consultar el [catálogo editorial, las reglas de selección y las capturas](website-editorial-v4/README.md).
+- Revisar los metadatos por ruta en `website/scripts/prerender.mjs`, la imagen social en `website/public/og-image.png` y el mapa de rutas en `website/public/sitemap.xml`. Ejecutar `pnpm build` desde `website/` y revisar la vista local antes de publicar.
 
-Pendiente recibir: fotografía principal y selección autorizada de portafolio,
-número comercial, perfiles y correo oficiales, aprobación del texto del estudio
-y revisión del aviso de privacidad antes de incorporar recopilación de datos.
-La página no garantiza la aprobación o verificación empresarial de Meta.
+## Verificación histórica de la primera versión
 
-## Verificación realizada
 
 - Dependencias instaladas en proyecto nuevo; instalación con lockfile completada.
 - TypeScript y build de producción generados; auditoría de 18 archivos correcta.
