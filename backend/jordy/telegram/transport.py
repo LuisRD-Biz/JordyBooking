@@ -3,6 +3,7 @@ import time
 
 import httpx
 
+from jordy.admin_reads import AdminReads
 from jordy.telegram.commands import reply_for
 
 
@@ -31,7 +32,13 @@ def call(client: httpx.Client, method: str, **params):
     raise ApiFailure(status, delay if type(delay) is int and delay > 0 else 5)
 
 
-def poll(client: httpx.Client, allowed: frozenset[int], sleep=time.sleep):
+def poll(
+    client: httpx.Client,
+    allowed: frozenset[int],
+    sleep=time.sleep,
+    *,
+    reads: AdminReads | None = None,
+):
     offset = 0
     while True:
         try:
@@ -43,7 +50,7 @@ def poll(client: httpx.Client, allowed: frozenset[int], sleep=time.sleep):
             for update in batch:
                 if not isinstance(update, dict) or type(update.get("update_id")) is not int:
                     raise ApiFailure(502)
-                reply = reply_for(update, allowed)
+                reply = reply_for(update, allowed, reads)
                 if reply:
                     try:
                         call(client, "sendMessage", chat_id=reply[0], text=reply[1])
