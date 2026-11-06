@@ -115,8 +115,7 @@ def packages(session: DB, limit: Limit = 100, offset: int = Query(0, ge=0)):
 
 @router.post("/availability")
 def availability(data: AvailabilityInput, session: DB):
-    package = require(session, Package, data.package_id)
-    assignments = services.allocation(session, services.snapshot(package), data.starts_at)
+    assignments = services.preview_allocation(session, data.package_id, data.starts_at)
     return {
         "available": assignments is not None,
         "suggested_assignments": assignments or {},
