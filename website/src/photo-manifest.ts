@@ -178,6 +178,26 @@ export const manifest: Photograph[] = [
     "isHero": false
   },
   {
+    "id": "brindis",
+    "category": "Bodas",
+    "title": "El brindis",
+    "alt": "Varias personas reúnen sus copas sobre la cámara en una fotografía en blanco y negro.",
+    "width": 2560,
+    "height": 1828,
+    "orientation": "landscape",
+    "position": 10,
+    "focal": "center",
+    "featured": false,
+    "visible": true,
+    "base": "/media/editorial/brindis",
+    "widths": [
+      560,
+      1040,
+      1560
+    ],
+    "isHero": false
+  },
+  {
     "id": "fachada",
     "category": "Bodas",
     "title": "A la salida",
@@ -185,7 +205,7 @@ export const manifest: Photograph[] = [
     "width": 1365,
     "height": 2048,
     "orientation": "portrait",
-    "position": 10,
+    "position": 11,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -205,7 +225,7 @@ export const manifest: Photograph[] = [
     "width": 2100,
     "height": 1500,
     "orientation": "landscape",
-    "position": 11,
+    "position": 12,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -225,7 +245,7 @@ export const manifest: Photograph[] = [
     "width": 2560,
     "height": 1706,
     "orientation": "landscape",
-    "position": 12,
+    "position": 13,
     "focal": "center",
     "featured": true,
     "visible": true,
@@ -245,7 +265,7 @@ export const manifest: Photograph[] = [
     "width": 2048,
     "height": 1367,
     "orientation": "landscape",
-    "position": 13,
+    "position": 14,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -258,6 +278,26 @@ export const manifest: Photograph[] = [
     "isHero": false
   },
   {
+    "id": "joya",
+    "category": "XV años",
+    "title": "Una joya",
+    "alt": "Una mano presenta un estuche rojo abierto con una joya.",
+    "width": 1920,
+    "height": 1371,
+    "orientation": "landscape",
+    "position": 15,
+    "focal": "center",
+    "featured": false,
+    "visible": true,
+    "base": "/media/flor-56",
+    "widths": [
+      640,
+      1200,
+      1920
+    ],
+    "isHero": false
+  },
+  {
     "id": "rojo",
     "category": "Bodas",
     "title": "Luz roja",
@@ -265,7 +305,7 @@ export const manifest: Photograph[] = [
     "width": 1024,
     "height": 686,
     "orientation": "landscape",
-    "position": 14,
+    "position": 16,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -277,26 +317,6 @@ export const manifest: Photograph[] = [
     "isHero": false
   },
   {
-    "id": "brindis",
-    "category": "Bodas",
-    "title": "El brindis",
-    "alt": "Varias personas reúnen sus copas sobre la cámara en una fotografía en blanco y negro.",
-    "width": 2560,
-    "height": 1828,
-    "orientation": "landscape",
-    "position": 15,
-    "focal": "center",
-    "featured": false,
-    "visible": true,
-    "base": "/media/editorial/brindis",
-    "widths": [
-      560,
-      1040,
-      1560
-    ],
-    "isHero": false
-  },
-  {
     "id": "pista",
     "category": "XV años",
     "title": "La pista",
@@ -304,7 +324,7 @@ export const manifest: Photograph[] = [
     "width": 3704,
     "height": 2646,
     "orientation": "landscape",
-    "position": 16,
+    "position": 17,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -324,7 +344,7 @@ export const manifest: Photograph[] = [
     "width": 1024,
     "height": 731,
     "orientation": "landscape",
-    "position": 17,
+    "position": 18,
     "focal": "center",
     "featured": false,
     "visible": true,
@@ -332,26 +352,6 @@ export const manifest: Photograph[] = [
     "widths": [
       560,
       1024
-    ],
-    "isHero": false
-  },
-  {
-    "id": "joya",
-    "category": "XV años",
-    "title": "Una joya",
-    "alt": "Una mano presenta un estuche rojo abierto con una joya.",
-    "width": 1920,
-    "height": 1371,
-    "orientation": "landscape",
-    "position": 18,
-    "focal": "center",
-    "featured": false,
-    "visible": true,
-    "base": "/media/flor-56",
-    "widths": [
-      640,
-      1200,
-      1920
     ],
     "isHero": false
   },

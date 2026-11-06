@@ -1,6 +1,6 @@
 import { manifest } from './photo-manifest';
 
-export type Category = 'Bodas' | 'XV aÃ±os' | 'Sesiones';
+export type Category = 'Bodas' | 'XV años' | 'Sesiones';
 export interface Photograph {
   id: string;
   category: Category;
@@ -16,6 +16,26 @@ export interface Photograph {
   visible: boolean;
   base: string;
   widths: number[];
+}
+
+export function validateManifest(records: readonly Photograph[]) {
+  const ids = new Set<string>();
+  if (records.filter(p => p.visible && p.isHero).length > 1) {
+    throw new Error('Solo una fotografía visible puede ocupar la portada.');
+  }
+  for (const p of records) {
+    const orientation = p.width === p.height ? 'square' : p.width > p.height ? 'landscape' : 'portrait';
+    if (!p.id.trim() || ids.has(p.id) || !p.alt.trim() || !p.title.trim() ||
+        !Number.isSafeInteger(p.position) || p.position < 1 ||
+        !Number.isSafeInteger(p.width) || p.width < 1 ||
+        !Number.isSafeInteger(p.height) || p.height < 1 || p.orientation !== orientation ||
+        !/^\/media\/(?:[\w-]+\/)*[\w-]+$/.test(p.base) ||
+        !p.widths.length || p.widths.some((w, i) =>
+          !Number.isSafeInteger(w) || w <= 0 || w > p.width || (i > 0 && w <= p.widths[i-1]))) {
+      throw new Error(`Ficha fotográfica inválida: ${p.id}`);
+    }
+    ids.add(p.id);
+  }
 }
 
 export function selectPhotos(records: readonly Photograph[]) {
