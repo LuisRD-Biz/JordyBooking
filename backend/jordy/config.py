@@ -5,11 +5,14 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class StudioDatabaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     database_url: str
-    admin_api_key: SecretStr = Field(min_length=32)
     studio_timezone: str = "America/Mexico_City"
+
+
+class Settings(StudioDatabaseSettings):
+    admin_api_key: SecretStr = Field(min_length=32)
     local_panel_access: bool = False
     panel_origin: str = "http://127.0.0.1:8000"
     document_root: Path = Path(__file__).resolve().parents[2] / ".local" / "documents"
