@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {contact, packageLink, whatsappLink} from './content';
-import {chapterPhotos, hero, portfolio, source} from './photos';
+import {chapterPhotos, hero, photographs, portfolio, source} from './photos';
 import type {Category, Photograph} from './photos';
 
 function Photo({photo, sizes, eager = false}: {photo: Photograph; sizes: string; eager?: boolean}) {
@@ -48,22 +48,29 @@ function Viewer({photos, initial, close}: {photos: Photograph[]; initial: number
 }
 
 const chapters = [
-  {id:'bodas', category:'Bodas', title:'El día de su boda.', text:'Desde el Save the Date hasta el primer baile. Acompañamos los preparativos, la ceremonia civil o religiosa y la sesión formal de pareja. Fotografía y video para volver a la mirada de tu familia en medio de la celebración.', cta:'Consultar mi fecha de boda', channel:'bodas'},
-  {id:'xv', category:'XV años', title:'Mis quince.', text:'El Save the Date y la sesión formal abren la historia. En casa, la bata, el maquillaje, el peinado y el vestido. Después, la bendición familiar, la ceremonia cuando forma parte del día, la entrada y el vals. Fotografía y video para acompañar cada momento.', cta:'Consultar paquetes de XV años', channel:'xv'},
+  {id:'bodas', category:'Bodas', title:'El día de su boda.', text:'Desde el Save the Date hasta el primer baile. Acompañamos los preparativos, la ceremonia civil o religiosa y la sesión formal de pareja. Fotografía y video para volver a la mirada de tu familia en medio de la celebración.', cta:'Consultar disponibilidad', channel:'bodas'},
+  {id:'xv', category:'XV años', title:'Mis quince.', text:'El Save the Date y la sesión formal abren la historia. En casa, la bata, el maquillaje, el peinado y el vestido. Después, la bendición familiar, la ceremonia cuando forma parte del día, la entrada y el vals. Fotografía y video para acompañar cada momento.', cta:'Consultar paquetes y fechas de XV años', channel:'xv'},
   {id:'sesiones', category:'Sesiones', title:'Una tarde contigo.', text:'Retratos personales, fotografía de pareja y sesiones casuales. Elegimos juntos la luz y la composición, te guiamos frente a la cámara y buscamos un exterior u otra locación según disponibilidad. Cada presupuesto es personalizado.', cta:'Consultar precio y disponibilidad por WhatsApp', channel:'sesiones'}
 ] as const;
 
 const packages = [
-  {name:'Plata', price:'14,500', items:['Cobertura fotográfica del evento', 'Video Full HD', '70 impresiones y 300 fotografías digitales', 'Ampliación']},
-  {name:'Oro', price:'22,500', items:['Save the Date y cobertura ampliada', 'Video y dron', '200 impresiones y 700 fotografías digitales', 'Ampliaciones']},
-  {name:'Ruby', price:'34,500', items:['Save the Date y Trash the Dress', 'Video con dos cámaras y dron', '100 impresiones y 900 fotografías digitales', 'Ampliaciones y photobook']}
+  {name:'Plata', price:'14,500', coverage:'Cobertura fotográfica del evento', video:'Video Full HD', prints:'70 impresiones y ampliación', digital:'300 fotografías digitales'},
+  {name:'Oro', price:'22,500', coverage:'Save the Date y cobertura ampliada', video:'Video y dron', prints:'200 impresiones y ampliaciones', digital:'700 fotografías digitales'},
+  {name:'Ruby', price:'34,500', coverage:'Save the Date y Trash the Dress', video:'Video con dos cámaras y dron', prints:'100 impresiones, ampliaciones y photobook', digital:'900 fotografías digitales'}
 ];
+const benefits = [
+  ['coverage','Fotografía'], ['video','Video'], ['digital','Entrega digital'], ['prints','Impresos']
+] as const;
 
 function Packages() {
   return <section className="packages" id="paquetes"><div className="wrap">
     <h3>Paquetes de boda</h3><div className="price-grid">{packages.map(p =>
       <article key={p.name}><h4>{p.name}</h4><p className="amount">${p.price} <small>MXN</small></p>
-      <ul>{p.items.map(item => <li key={item}>{item}</li>)}</ul><Link href={packageLink(p.name)}>Cotizar {p.name}</Link></article>
+        <dl>{benefits.map(([key, label]) =>
+          <div key={key}><dt>{label}</dt><dd>{p[key]}</dd></div>
+        )}</dl>
+        <Link href={packageLink(p.name)}>Cotizar {p.name}</Link>
+      </article>
     )}</div></div></section>;
 }
 
@@ -80,13 +87,16 @@ export function Home() {
     setViewer(null);
     requestAnimationFrame(() => opener.current?.focus({preventScroll:true}));
   }
-  const filtered = portfolio.filter(p => filter === 'Todas' || filter === p.category);
+  const filtered = filter === 'Todas' ? portfolio : photographs.filter(p => p.category === filter && !p.isHero);
   return <main id="contenido">
     <section className="cover">
       {hero && <Photo photo={hero} sizes="100vw" eager/>}
       <div className="cover-copy"><p className="kicker">Fotografía &amp; video</p>
         <h1>Historias que<br/><em>se quedan.</em></h1>
-        <a className="cover-button" href="#portafolio">Explorar portafolio <span aria-hidden="true">↓</span></a>
+        <div className="cover-actions">
+          <a className="cover-button" href="#portafolio">Explorar portafolio <span aria-hidden="true">↓</span></a>
+          <Link href={whatsappLink('hero')}>Cotizar mi evento</Link>
+        </div>
       </div>
       {hero && <button className="cover-credit" onClick={() => open([hero], 0)} aria-label={'Ampliar ' + hero.title}>{hero.title} <span aria-hidden="true">⤢</span></button>}
     </section>
@@ -103,14 +113,16 @@ export function Home() {
     <div id="servicios">{chapters.map(ch => <div key={ch.id}>
       <section className={'chapter chapter-' + ch.id} id={ch.id}><div className="wrap">
         <div className="story-intro"><div><p className="kicker">{ch.category}</p><h2>{ch.title}</h2></div>
-        <div><p>{ch.text}</p><Link href={whatsappLink(ch.channel)}>{ch.cta}</Link></div></div>
+        <div><p>{ch.text}</p><div className="story-actions"><Link href={whatsappLink(ch.channel)}>{ch.cta}</Link>
+          {ch.id === 'bodas' && <a className="ink-link" href="#paquetes">Ver paquetes ↓</a>}
+        </div></div></div>
         <Gallery photos={chapterPhotos.filter(p => p.category === ch.category)} open={open}/>
       </div></section>
       {ch.id === 'bodas' && <Packages/>}
     </div>)}</div>
-    <section className="inquire" id="contacto"><div className="wrap"><p className="kicker">Contacto</p>
-      <h2>Cuéntame <em>tu historia.</em></h2><Link href={whatsappLink()}>Hablemos por WhatsApp</Link>
-      <div className="contact-networks"><Link href={contact.instagram}>Instagram</Link><Link href={contact.facebook}>Facebook</Link></div>
+    <section className="inquire" id="contacto"><div className="wrap contact-layout"><div><p className="kicker">Contacto</p>
+      <h2>Cuéntame <em>tu historia.</em></h2></div><div className="contact-actions"><Link href={whatsappLink()}>Hablemos por WhatsApp</Link>
+      <div className="contact-networks"><Link href={contact.instagram}>Instagram</Link><Link href={contact.facebook}>Facebook</Link></div></div>
     </div></section>{viewer && <Viewer photos={viewer.photos} initial={viewer.index} close={closeViewer}/>}
   </main>;
 }
