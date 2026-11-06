@@ -1,6 +1,6 @@
 import { manifest } from './photo-manifest';
 
-export type Category = 'Bodas' | 'XV años' | 'Sesiones';
+export type Category = 'Bodas' | 'XV aÃ±os' | 'Sesiones';
 export interface Photograph {
   id: string;
   category: Category;
@@ -9,7 +9,7 @@ export interface Photograph {
   width: number;
   height: number;
   orientation: 'portrait' | 'landscape' | 'square';
-  priority: number;
+  isHero: boolean;
   position: number;
   focal: 'left' | 'center' | 'right' | 'top' | 'bottom';
   featured: boolean;
@@ -18,10 +18,16 @@ export interface Photograph {
   widths: number[];
 }
 
-export const photographs = manifest.filter(p => p.visible).sort((a, b) => a.position - b.position);
-export const hero = [...photographs].sort((a, b) => Number(b.featured) - Number(a.featured) || a.priority - b.priority)[0];
-export const chapterPhotos = photographs.filter(p => p.featured && p !== hero);
-export const portfolio = photographs.filter(p => !p.featured && p !== hero);
+export function selectPhotos(records: readonly Photograph[]) {
+  const photographs = records.filter(p => p.visible).sort((a, b) => a.position - b.position);
+  const hero = photographs.find(p => p.isHero);
+  const chapterPhotos = photographs.filter(p => p.featured && !p.isHero);
+  const portfolio = photographs.filter(p => !p.featured && !p.isHero);
+  return {photographs, hero, chapterPhotos, portfolio};
+}
+
+export const {photographs, hero, chapterPhotos, portfolio} = selectPhotos(manifest);
+
 export function source(photo: Photograph, width = Math.max(...photo.widths)) {
   return `${photo.base}-${width}.webp`;
 }
