@@ -1,7 +1,7 @@
 """Framework-independent scheduling and booking rules."""
 
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 
@@ -11,6 +11,14 @@ class RuleViolation(Exception):
 
 class Conflict(RuleViolation):
     pass
+
+
+def day_bounds(day: date, timezone: str, days: int = 1) -> tuple[datetime, datetime]:
+    zone = ZoneInfo(timezone)
+    return (
+        datetime.combine(day, time.min, zone),
+        datetime.combine(day + timedelta(days=days), time.min, zone),
+    )
 
 
 def christmas_slots(day, timezone: str) -> list[datetime]:

@@ -1,3 +1,5 @@
+> Traspaso histórico. Las ramas, procesos y permisos descritos corresponden a cada sesión. Consulta el [índice de documentación](README.md) para la operación actual.
+
 # Reorganización Git/CI — 3 de noviembre de 2026
 
 Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.

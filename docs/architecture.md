@@ -1,5 +1,76 @@
 # Arquitectura y decisiones
 
+## Mapa del repositorio
+
+```text
+backend/jordy/
+  main.py, api.py, auth.py               aplicación privada y autenticación
+  domain.py, repository.py, services.py  reglas, recursos y transacciones de reservas
+  crm.py, customers.py, search.py        oportunidades, contactos y búsquedas
+  documents.py                          originales privados y versiones
+  commercial*.py                        señales, propuestas y resúmenes
+  messaging/                            webhook, proveedor, bandeja y worker WhatsApp
+  telegram/                             autorización, comandos y long polling privado
+  admin_reads.py, admin_queries.py       casos de consulta y proyecciones PostgreSQL
+  integrations.py, worker.py            adaptador y outbox de calendario
+frontend/src/                           panel React servido por FastAPI
+website/{src,public,scripts}/           portafolio estático con build propio
+migrations/versions/                    historial Alembic compartido
+scripts/                                arranque local y verificaciones operativas
+tests/                                  pruebas por componente y esquema efímero
+docs/                                   guías, decisiones y evidencia histórica
+.github/workflows/                      validación de backend, panel y web
+```
+
+**Reserva y CRM.** El panel llama a la API del mismo origen. El CRM convierte una
+cotización en una solicitud con el snapshot acordado. La aprobación asigna recursos
+y una reprogramación confirmada los vuelve a asignar. PostgreSQL protege contra solapamientos incluso
+si dos solicitudes compiten. Las citas administrativas y las fechas comerciales
+tienen tablas y ciclos de vida propios.
+
+**Canales.** El webhook de WhatsApp valida y persiste eventos. Su worker procesa
+la cola y aplica la política de envío. La web pública solo ofrece enlaces de contacto.
+Telegram identifica al operador y llama a casos de consulta del backend. Iniciar
+FastAPI para atender Telegram también iniciaría la recuperación de resúmenes,
+capaz de escribir datos. Por eso los procesos tienen puntos de entrada separados.
+
+**Contrato de lectura.** `telegram/commands.py` entrega parámetros a
+`AdminReads.agenda`, `availability` o `pending`. Los casos devuelven registros
+inmutables con límite y un indicador de más resultados. `admin_queries.py` abre
+una transacción PostgreSQL `REPEATABLE READ, READ ONLY` por comando. Las tres
+operaciones son también el punto de extensión para otro cliente, incluida una
+futura interfaz con IA. La interfaz solo necesita esas operaciones y sus
+resultados. El proceso que la aloje debe conservar la autorización del operador.
+
+## Auditoría y orden de trabajo
+
+| Hallazgo en la base del PR #5 | Decisión y criterio de revisión |
+| --- | --- |
+| `telegram.py` reunía transporte HTTP, permisos, respuestas y arranque. Añadir PostgreSQL ahí acoplaría los fallos de consultas al polling. | Separar adaptador y lecturas. Conservar el punto de entrada y los tests de la primera versión como prueba de equivalencia. |
+| El criterio «necesita respuesta» vivía dentro de la serialización HTTP de la bandeja. El motor de disponibilidad ya contempla preparación, márgenes y asignación por capacidad. | Reutilizar el criterio de bandeja y la consulta de disponibilidad. Telegram solo presenta resultados e identificadores necesarios. |
+| `project-status.md` y `NEXT_SESSION.md` repiten estados fechados. El README aún presentaba la integración inicial como pendiente. | Crear [un índice por tarea](README.md), corregir referencias actuales y preservar las bitácoras con fecha. |
+| Los scripts PowerShell repiten cómo localizar el proyecto y Python. Panel, receptor, túnel y Telegram necesitan controles y ciclos de vida diferentes. | Conservar los lanzadores públicos. Separar la creación de datos de prueba del instalador del panel, que también prepara la base operativa. |
+| Panel y web usan React y TypeScript pero publican artefactos distintos, con versiones y dependencias propias. Las migraciones registran todos los modelos en el mismo esquema. | Conservar ambos lockfiles y las cuatro migraciones existentes. Una consulta sobre tablas actuales no requiere DDL. |
+
+### Cambios que requieren otro PR
+
+1. **Acceso operativo.** Probar un rol PostgreSQL con permisos SELECT limitados a
+   las tablas requeridas en una instalación de ensayo. Separar su rotación de la
+   credencial del panel antes de ampliar el número de operadores.
+2. **Rutas y transacciones.** `commercial.py` reúne HTTP, detección, generación
+   de informes y recuperación programada. `messaging/api.py` consulta cliente,
+   último mensaje e indicadores por conversación. Separar primero las lecturas
+   con pruebas de equivalencia de filtros y tiempos. Medir consultas por página
+   antes de modificar la serialización del panel. Mover modelos entre módulos
+   requeriría verificar el registro en Alembic y los cuatro upgrades históricos.
+3. **Interfaz privada.** `main.tsx` y `features.tsx` superan 32 KB cada uno y
+   combinan formularios, selección y recarga. Extraer una pantalla por PR con
+   comprobaciones de sesión, navegación y borradores. El volumen de
+   `tests/test_messaging.py` por sí solo no justifica mover sus escenarios.
+4. **Escala.** Evaluar índices y paginación con planes de ejecución sobre datos
+   sintéticos representativos si las consultas llegan al límite habitual.
+   Mantener las pruebas concurrentes de ocupación antes de cambiar bloqueos.
+
 ## ADR 001 — Monolito modular y primer corte vertical
 
 Estado: enfoque aprobado por el usuario; implementación inicial administrativa.
@@ -95,8 +166,8 @@ cuenta, destinatario autorizado y ventana/plantilla antes de cada envío manual.
 Un intento incierto nunca se reenvía automáticamente. `accepted` no significa `delivered`.
 La identidad pertenece al canal/cuenta y se vincula a un cliente por teléfono único exacto
 o confirmación administrativa. No se crean reservaciones ni cotizaciones por mensajes.
-Ver [arquitectura, límites y operación de WhatsApp](whatsapp.md). Integración real pendiente
-de sustitución del token expuesto, exposición temporal autorizada y prueba con el usuario.
+Ver [arquitectura, límites y operación de WhatsApp](whatsapp.md). El estado inicial
+de esta integración y su prueba posterior se documentan en el ADR 008.
 
 ## ADR 008 — Identidad entrante y destinatario de envío distintos (19 octubre 2026)
 

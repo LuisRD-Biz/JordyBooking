@@ -1,13 +1,14 @@
 # JordyBooking
 
+[Índice de documentación](docs/README.md) · [Mapa y auditoría de arquitectura](docs/architecture.md) · [Asistente administrativo de Telegram](docs/telegram.md)
+
 ## Página pública de Jordy Flores
 
 La web de `jordyflores.com` vive en **`website/`**, independiente del panel.
 React + TypeScript + Vite; publicación estática en el Worker `young-moon-14a9`.
 Desde `website/`: `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm preview`.
 Consulta [despliegue en Cloudflare y edición de contenido](docs/website-deployment.md).
-Web original guardada en `543b1dd`. Integración mediante dos PR: base y después web.
-Producción únicamente desde `main`; Cloudflare todavía no se activa.
+Web original guardada en `543b1dd`. La rama de publicación prevista es `main`.
 Consulta [contribuciones](CONTRIBUTING.md), [CI/CD](docs/ci-cd.md) y
 [la integración inicial](docs/git-integration.md) al integrar la base.
 
@@ -48,6 +49,11 @@ en octubre/noviembre, con disponibilidad compartida con eventos normales. Config
 el set como recurso y requisito si solo puede utilizarlo una sesión a la vez.
 
 ## Verificación
+
+En Windows con PostgreSQL 18 instalado, la ruta reproducible es
+`uv sync --locked` y después `.\.venv\Scripts\python.exe scripts\test-postgres.py -q`.
+El script crea y retira un clúster temporal en loopback para toda la suite.
+Para usar una instancia de pruebas administrada por separado, sigue este flujo:
 
 ```powershell
 uv run ruff check backend scripts tests migrations
