@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {contact, packageLink, whatsappLink} from './content';
-import {chapterPhotos, hero, photographs, portfolio, source} from './photos';
+import {chapterPhotos, hero as coverPhoto, photographs, portfolio, source} from './photos';
 import type {Category, Photograph} from './photos';
 
 function Photo({photo, sizes, eager = false}: {photo: Photograph; sizes: string; eager?: boolean}) {
@@ -19,7 +19,7 @@ function Gallery({photos, open}: {photos: Photograph[]; open: Open}) {
   return <div className="prints">{photos.map((photo, i) =>
     <figure key={photo.id} className={'print ' + photo.orientation}>
       <button className="mount" onClick={() => open(photos, i)} aria-label={'Ampliar: ' + photo.title}>
-        <Photo photo={photo} sizes="(max-width: 720px) 92vw, 44vw"/><span aria-hidden="true">⤢</span>
+        <Photo photo={photo} sizes={photos.length === 1 ? "(max-width: 720px) calc(100vw - 32px), (max-width: 960px) 89vw, 850px" : "(max-width: 720px) calc(100vw - 32px), 50vw"}/><span aria-hidden="true">⤢</span>
       </button>
       <figcaption><i>{photo.title}</i><small>{photo.category}</small></figcaption>
     </figure>
@@ -38,7 +38,7 @@ function Viewer({photos, initial, close}: {photos: Photograph[]; initial: number
     return () => {dialog.close(); document.body.style.overflow = previous;};
   }, []);
   return <dialog ref={ref} className="viewer" aria-label="Fotografía ampliada" onCancel={close}
-    onKeyDown={e => {if (e.key === 'ArrowLeft') move(-1); if (e.key === 'ArrowRight') move(1);}}>
+    onKeyDown={e => {if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {e.preventDefault(); move(e.key === 'ArrowLeft' ? -1 : 1);}}}>
     <button autoFocus className="close" onClick={close}>Cerrar ×</button>
     <Photo photo={photos[index]} sizes="100vw" eager/>
     <div className="viewer-controls">{photos.length > 1 && <button onClick={() => move(-1)} aria-label="Fotografía anterior">←</button>}
@@ -75,6 +75,7 @@ function Packages() {
 }
 
 export function Home() {
+  const hero = coverPhoto;
   const [filter, setFilter] = useState<Category | 'Todas'>('Todas');
   const [limit, setLimit] = useState(4);
   const [viewer, setViewer] = useState<{photos: Photograph[]; index: number} | null>(null);
@@ -103,10 +104,11 @@ export function Home() {
     <div className="imprint wrap" id="nosotros"><span className="kicker">El estudio</span><p>Fotografiamos bodas, quince años y la complicidad de un retrato.</p>
       <a href="#servicios">Conoce las colecciones <span aria-hidden="true">↓</span></a></div>
     <section className="archive wrap" id="portafolio"><div className="section-head"><h2>El portafolio<span>.</span></h2>
-      <div className="filters" aria-label="Categoría de fotografías">{(['Todas','Bodas','XV años','Sesiones'] as const).map(c =>
+      <div className="filters" role="group" aria-label="Categoría de fotografías">{(['Todas','Bodas','XV años','Sesiones'] as const).map(c =>
         <button key={c} aria-pressed={c === filter} onClick={() => {setFilter(c); setLimit(4);}}>{c}</button>
       )}</div></div>
-      <Gallery photos={filtered.slice(0,limit)} open={(_,index) => open(filtered,index)}/>
+      <p className="sr-only" role="status">{filter}: {Math.min(limit, filtered.length)} de {filtered.length} fotografías.</p>
+      <Gallery key={filter} photos={filtered.slice(0,limit)} open={(_,index) => open(filtered,index)}/>
       {filtered.length === 0 && <p>No hay fotografías visibles en esta colección.</p>}
       {filtered.length > limit && <button className="more" onClick={() => setLimit(n => n + 4)}>Ver más fotografías <span aria-hidden="true">＋</span></button>}
     </section>

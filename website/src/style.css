@@ -850,3 +850,12 @@ em,i {
   .price-grid .ink-link {width:100%;}
   .inquire {padding-block:2.5rem;}
 }
+
+.sr-only {position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.cover-button,.ink-link,.menu-toggle,.viewer button,.cover-credit,.footer-socials a,.site-footer nav a {min-height:44px;}
+.viewer-controls button {border:1px solid #867d73;border-radius:50%;min-width:44px;padding:.5rem;}
+.site-footer nav a {display:inline-flex;align-items:center;}
+@media (prefers-reduced-motion:no-preference) {
+  .archive .prints,.navigation.is-open {animation:rise .22s ease-out;}
+  .filters button,.ink-link,.cover-button {transition:background-color .18s,color .18s,opacity .18s;}
+}

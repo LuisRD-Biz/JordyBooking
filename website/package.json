@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
     "typecheck": "tsc --noEmit",
-    "build": "pnpm typecheck && vite build && vite build --ssr src/prerender.tsx --outDir .build && node scripts/prerender.mjs && node scripts/check-dist.mjs",
+    "build": "pnpm typecheck && vite build && vite build --ssr src/prerender.tsx --outDir .build && node --test scripts/photo-manifest.test.mjs && node scripts/prerender.mjs && node scripts/check-dist.mjs",
     "preview": "wrangler dev --ip 127.0.0.1 --port 4174 --local",
     "deploy:check": "wrangler deploy --dry-run",
     "deploy": "pnpm build && wrangler deploy"
