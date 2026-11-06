@@ -17,7 +17,10 @@ Ejemplos: `feature/ai-assistant`, `feature/client-portal`, `feature/payments`.
 La IA deberá usar las validaciones del dominio: nunca cambiar reservas o pagos
 directamente ni saltarse aprobación, contratos, permisos o idempotencia.
 
-Durante la integración inicial: primero PR `feature/project-baseline` → `main`;
+Para un cambio que depende de un PR abierto, crear la rama desde la cabecera de
+ese PR y apuntar el nuevo PR a la rama padre. Así se revisa solo la diferencia.
+
+Antecedente de la integración inicial: primero PR `feature/project-baseline` → `main`;
 después retargetear PR `feature/website` a `main`. Usar merge commit para esta
 base histórica, conservando ancestros compartidos; no squash/rebase de esa base.
 No borrar ramas históricas ni el stash existente. Las ramas ya publicadas no
