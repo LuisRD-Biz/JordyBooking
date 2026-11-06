@@ -1,17 +1,77 @@
 services:
   db:
-    image: postgres:18
+    image: postgres:18@sha256:e3d24f6906d0760bf4da0dae872415391ededefad23fd471c47dc53b0ddf3c42
+    restart: unless-stopped
     environment:
       POSTGRES_USER: jordy
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the selected env file}
       POSTGRES_DB: jordy
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    # Docker needs a non-internal bridge for the existing loopback host port.
+    networks: [db_host, data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jordy -d jordy"]
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "jordy", "-d", "jordy"]
       interval: 5s
+      timeout: 3s
       retries: 10
+      start_period: 15s
+
+  api:
+    image: &app_image "${COMPOSE_PROJECT_NAME}-app:local"
+    build: .
+    pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://jordy_app@db:5432/jordy
+      PGPASSWORD: ${JORDY_APP_PASSWORD:-}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
+      STUDIO_TIMEZONE: ${STUDIO_TIMEZONE:-America/Mexico_City}
+      LOCAL_PANEL_ACCESS: "false"
+      PANEL_ORIGIN: "http://127.0.0.1:${PANEL_PORT:-8000}"
+      DOCUMENT_ROOT: /var/lib/jordy/documents
+    ports:
+      - "127.0.0.1:${PANEL_PORT:-8000}:8000"
+    volumes:
+      - documents:/var/lib/jordy/documents
+    networks: [panel, data]
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health/ready', timeout=3).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  migrate:
+    image: *app_image
+    pull_policy: never
+    profiles: [tools]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [data]
+    environment:
+      DATABASE_URL: postgresql+psycopg://jordy@db:5432/jordy
+      PGHOST: db
+      PGDATABASE: jordy
+      PGUSER: jordy
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      JORDY_APP_PASSWORD: ${JORDY_APP_PASSWORD:-}
+    entrypoint: ["python", "/app/docker/migrate.py"]
+    command: ["current"]
+
+networks:
+  data:
+    internal: true
+  db_host: {}
+  panel: {}
+
 volumes:
   postgres_data:
+  documents:
