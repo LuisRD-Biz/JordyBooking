@@ -32,7 +32,7 @@ de integración; sin ella hay pruebas omitidas, no una validación completa.
 La auditoría de secretos detecta patrones conocidos y archivos privados comunes;
 no sustituye revisión humana ni garantiza detectar cualquier credencial o dato personal.
 
-La web tendrá su workflow separado con Node/pnpm declarados, TypeScript, build y
+La web tiene su workflow separado con Node/pnpm declarados, TypeScript, build y
 auditoría estática. Ningún workflow de Actions despliega ni recibe tokens de producción.
 Los checks se ejecutan en PR y pushes a main; no usamos `pull_request_target` ni
 runners locales. Permisos del token: solo lectura. No se reduce la suite para pasar CI.

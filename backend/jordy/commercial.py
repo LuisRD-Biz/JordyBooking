@@ -1,7 +1,7 @@
 """Stored observations and reports; deliberately no messaging/booking dispatch."""
 
 from collections import Counter
-from datetime import date, datetime, time, timedelta
+from datetime import date, time, timedelta
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
@@ -24,7 +24,7 @@ from jordy.commercial_rules import detect
 from jordy.config import settings
 from jordy.crm import serialize
 from jordy.db import get_session
-from jordy.domain import RuleViolation
+from jordy.domain import RuleViolation, day_bounds
 from jordy.models import AuditLog, Booking, Conversation, Lead, Message
 from jordy.repository import require
 from jordy.schemas import Input
@@ -204,14 +204,6 @@ def plans(session: DB, day: date | None = None, offset: int = Query(0, ge=0)):
         serialize(r)
         for r in session.scalars(stmt.order_by(CommercialPlan.id.desc()).offset(offset).limit(200))
     ]
-
-
-def day_bounds(day, timezone):
-    zone = ZoneInfo(timezone)
-    return (
-        datetime.combine(day, time.min, zone),
-        datetime.combine(day + timedelta(days=1), time.min, zone),
-    )
 
 
 def generate_summary(session, day):

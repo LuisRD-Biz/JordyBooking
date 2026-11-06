@@ -8,6 +8,7 @@ RULES = {
     "private-key": rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
     "github-token": rb"(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{50,})",
     "meta-token": rb"\bEAA[A-Za-z0-9]{50,}",
+    "telegram-token": rb"(?<![0-9])[0-9]{5,16}:[A-Za-z0-9_-]{35,}(?![A-Za-z0-9_-])",
     "openai-token": rb"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{40,}",
     "aws-access-key": rb"\bAKIA[A-Z0-9]{16}\b",
 }

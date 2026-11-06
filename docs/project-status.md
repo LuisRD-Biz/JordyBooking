@@ -1,3 +1,5 @@
+> Bitácora histórica. Para consultar la arquitectura y las guías vigentes, abre el [índice de documentación](README.md).
+
 # Reorganización Git/CI — 3 de noviembre de 2026
 
 Árbol inicial limpio; web ya publicada en GitHub en `543b1dd`.

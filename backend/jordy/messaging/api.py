@@ -14,6 +14,7 @@ from jordy.db import get_session
 from jordy.domain import RuleViolation
 from jordy.messaging.config import messaging_settings
 from jordy.messaging.policy import ERRORS, SendPolicyViolation, error_diagnostic, resolve_recipient
+from jordy.messaging.queries import needs_reply
 from jordy.messaging.service import queue_reply
 from jordy.models import Conversation, Customer, Lead, Message, Outbox
 from jordy.repository import require
@@ -126,17 +127,8 @@ def conversation_dict(session, conversation):
             CommercialSignal.review_state == "pending",
         )
     )
-    last_reply = session.scalar(
-        select(func.max(Message.occurred_at)).where(
-            Message.conversation_id == conversation.id,
-            Message.direction == "outgoing",
-            Message.status.in_(["accepted", "sent", "delivered", "read"]),
-        )
-    )
-    result["needs_reply"] = bool(
-        conversation.state == "human"
-        and conversation.last_incoming_at
-        and (not last_reply or last_reply < conversation.last_incoming_at)
+    result["needs_reply"] = session.scalar(
+        select(needs_reply()).select_from(Conversation).where(Conversation.id == conversation.id)
     )
     return result
 
