@@ -95,6 +95,11 @@ def allocation(session: Session, snap: dict, start: datetime, *, lock=False):
     return AvailabilityService.check_availability(snap["requirements"], candidates)
 
 
+def preview_allocation(session: Session, package_id: int, start: datetime):
+    package = require(session, Package, package_id)
+    return allocation(session, snapshot(package), start)
+
+
 def create_booking(session: Session, data: BookingInput, key: str):
     # Transaction-scoped advisory lock serializes retries with the same key.
     from sqlalchemy import text
