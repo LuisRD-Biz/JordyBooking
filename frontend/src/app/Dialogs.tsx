@@ -3,7 +3,7 @@ import {Ban, CalendarPlus, ChevronRight, FileCheck2, UserPlus} from 'lucide-reac
 import {api} from '../api';
 import {AppointmentDetail, BlockDetail} from '../calendar/EventDetails';
 import type {AgendaItem} from '../calendar/agenda';
-import {AppointmentForm, BookingForm, ContractEditor, CustomerEditor} from '../features';
+import {AppointmentForm, BookingForm, CustomerEditor} from '../features';
 import {capitalize, dayLabel, localInput, toUtc} from '../lib/dates';
 import {Editor, Modal, PackageEditor, ResourceEditor} from '../shared';
 import type {Row} from '../shared';
@@ -95,8 +95,6 @@ export function Dialogs({dialog, close}: {dialog: Dialog | null; close: () => vo
       return <AppointmentForm booking={row?.id ? row : undefined} day={day} zone={zone} onClose={close} onSaved={() => changed('Cita programada')}/>;
     case 'customer':
       return <CustomerEditor customer={row?.id ? row : undefined} onClose={close} onSaved={() => changed()}/>;
-    case 'contract':
-      return <ContractEditor booking={row!} zone={zone} onClose={close} onSaved={() => changed()}/>;
     case 'event-appointment':
       return <AppointmentDetail item={row as AgendaItem} onClose={close}/>;
     case 'event-block':

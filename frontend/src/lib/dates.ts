@@ -47,4 +47,6 @@ export const daysInMonth = (month: string) => {
 };
 
 export const relative = (value: Instant) =>
-  formatDistanceToNowStrict(new Date(value), {locale: es, addSuffix: true});
+  Date.now() - new Date(value).getTime() < 60_000
+    ? 'hace un momento'
+    : formatDistanceToNowStrict(new Date(value), {locale: es, addSuffix: true});
