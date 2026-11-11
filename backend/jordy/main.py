@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
@@ -58,13 +58,14 @@ async def lifespan(app):
                     pass
             await asyncio.sleep(60)
 
-    task = asyncio.create_task(summaries())
+    task = asyncio.create_task(summaries()) if settings().messaging_enabled else None
     yield
-    task.cancel()
-    try:
-        await task
-    except asyncio.CancelledError:
-        pass
+    if task:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
     get_engine().dispose()
 
 
@@ -89,8 +90,16 @@ app.include_router(auth_router)
 app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)
-app.include_router(messaging_router)
-app.include_router(commercial_router)
+
+
+def messaging_enabled():
+    # Runs before authentication: with the feature off these paths do not exist at all.
+    if not settings().messaging_enabled:
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+for optional_router in (messaging_router, commercial_router):
+    app.include_router(optional_router, dependencies=[Depends(messaging_enabled)])
 
 
 @app.get("/health")

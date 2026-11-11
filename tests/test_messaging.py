@@ -23,6 +23,8 @@ from jordy.models import Booking, Conversation, Customer, Lead, Message, Outbox,
 from jordy.services import now
 from jordy.worker import process_batch
 
+pytestmark = pytest.mark.usefixtures("messaging_enabled")
+
 
 @pytest.fixture
 def wa(database, monkeypatch):
