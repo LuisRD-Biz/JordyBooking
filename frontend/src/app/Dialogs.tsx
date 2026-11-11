@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {Ban, CalendarPlus, ChevronRight, FileCheck2, UserPlus} from 'lucide-react';
 import {api} from '../api';
+import {AppointmentDetail, BlockDetail} from '../calendar/EventDetails';
+import type {AgendaItem} from '../calendar/agenda';
 import {AppointmentForm, BookingForm, ContractEditor, CustomerEditor} from '../features';
 import {capitalize, dayLabel, localInput, toUtc} from '../lib/dates';
 import {Editor, Modal, PackageEditor, ResourceEditor} from '../shared';
@@ -71,6 +73,10 @@ export function Dialogs({dialog, close}: {dialog: Dialog | null; close: () => vo
       return <CustomerEditor customer={row?.id ? row : undefined} onClose={close} onSaved={() => changed()}/>;
     case 'contract':
       return <ContractEditor booking={row!} zone={zone} onClose={close} onSaved={() => changed()}/>;
+    case 'event-appointment':
+      return <AppointmentDetail item={row as AgendaItem} onClose={close}/>;
+    case 'event-block':
+      return <BlockDetail item={row as AgendaItem} onClose={close}/>;
     case 'availability':
       return <Availability day={day} onClose={close}/>;
     case 'resource':

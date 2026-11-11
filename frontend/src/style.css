@@ -397,20 +397,65 @@ dialog > form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 }
 @keyframes side-in { from { transform: translateX(24px); opacity: 0; } }
 
-/* ── Calendar (interim month grid) ────────────────────────────────────────── */
+/* ── Calendar ─────────────────────────────────────────────────────────────── */
 .calendar-layout { display: grid; gap: var(--s-4); align-items: start; }
-@media (min-width: 1024px) { .calendar-layout { grid-template-columns: minmax(0, 1fr) 400px; } }
+@media (min-width: 1024px) {
+  .calendar-layout { grid-template-columns: minmax(0, 1fr) 420px; }
+  .day-agenda { position: sticky; top: 88px; max-height: calc(100dvh - 112px); overflow-y: auto; }
+}
+.pending-strip { display: flex; gap: var(--s-2); }
+.pending-strip button { display: flex; flex: 1; align-items: center; gap: var(--s-2); min-height: var(--tap); padding: 0 var(--s-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: var(--ink); font-size: var(--fs-14); text-align: left; }
+.pending-strip button:hover { background: var(--surface-2); }
+.pending-strip span { flex: 1; }
+.pending-strip svg { color: var(--ink-2); }
+
 .calendar { padding: var(--s-3); }
-.calendar-top { display: flex; align-items: center; gap: var(--s-1); padding: 0 0 var(--s-2) var(--s-2); }
-.calendar-top h2 { flex: 1; }
-.month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.calendar-top { display: flex; align-items: center; gap: var(--s-1); padding-left: var(--s-2); }
+.calendar-top h2 { flex: 1; min-width: 0; font-size: 1.5rem; }
+.secondary.compact { padding: 0 var(--s-3); }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; margin: var(--s-1) 0 var(--s-2); padding: 2px; border-radius: var(--r-md); background: var(--surface-2); }
+.segmented button { min-height: 40px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--ink-2); font-size: var(--fs-14); font-weight: 600; }
+.segmented button[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; touch-action: pan-y; }
 .weekday { padding: var(--s-1) 0; color: var(--ink-3); font-size: var(--fs-12); font-weight: 700; text-align: center; }
-.day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 48px; padding: 4px 0; border: 1px solid transparent; border-radius: var(--r-md); background: transparent; color: var(--ink); font-size: var(--fs-15); font-weight: 500; }
+.day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 46px; padding: 4px 0; border: 0; border-radius: var(--r-md); background: transparent; color: var(--ink); font-size: var(--fs-15); font-weight: 500; }
 .day:hover { background: var(--surface-2); }
-.day[aria-current='date'] > span { color: var(--accent-strong); font-weight: 800; }
-.day[aria-pressed='true'] { background: var(--ink); color: var(--surface); }
-.day[aria-pressed='true'] > span { color: var(--surface); }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+.day small { color: var(--ink-3); font-size: var(--fs-12); font-weight: 700; }
+.month-grid.week .day { min-height: 84px; }
+.day[aria-current='date'] > span:first-of-type { color: var(--accent-strong); font-weight: 800; }
+.day[aria-pressed='true'], .day[aria-pressed='true']:hover { background: var(--ink); }
+.day[aria-pressed='true'] > span:first-of-type, .day[aria-pressed='true'] small { color: var(--surface); }
+.dots { display: flex; gap: 3px; height: 6px; }
+.dot { flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+.dot.pending { background: var(--ochre); }
+.dot.appointment { background: var(--slate); }
+.dot.block { background: var(--stone); }
+.dot.cancelled { background: var(--clay); }
+.day[aria-pressed='true'] .dot { outline: 1px solid var(--surface); }
+.legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-1) var(--s-3); margin: var(--s-2) 0 0; padding: var(--s-2) var(--s-2) 0; border-top: 1px solid var(--line); list-style: none; color: var(--ink-2); font-size: var(--fs-12); font-weight: 600; }
+.legend li { display: flex; align-items: center; gap: 6px; }
+
+.day-agenda .panel-head > .muted { margin-left: auto; }
+.events { margin: 0; padding: 0; list-style: none; }
+.events li { border-top: 1px solid var(--line); }
+.event { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: var(--s-3); width: 100%; min-height: 68px; padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4); border: 0; border-left: 4px solid var(--sage); background: transparent; color: var(--ink); text-align: left; }
+.event:hover { background: var(--surface-2); }
+.event.pending { border-left-color: var(--ochre); }
+.event.appointment { border-left-color: var(--slate); }
+.event.cancelled { border-left-color: var(--clay); }
+.event.block { border-left-color: var(--stone); background: repeating-linear-gradient(135deg, var(--stone-bg) 0 6px, var(--surface) 6px 14px); }
+.event time strong, .event time small, .event-body strong, .event-body small { display: block; }
+.event time strong { font-size: var(--fs-15); }
+.event time small, .event-body small { color: var(--ink-2); font-size: var(--fs-14); }
+.event-body { min-width: 0; }
+.event-body strong, .event-body small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-status { font-size: var(--fs-12); font-style: normal; font-weight: 700; color: var(--sage-ink); }
+.event-status.pending { color: var(--ochre-ink); }
+.event-status.appointment { color: var(--slate-ink); }
+.event-status.block { color: var(--stone-ink); }
+.event-status.cancelled { color: var(--clay-ink); }
+.event > svg { color: var(--ink-3); }
+.day-empty, .day-actions { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-top: 1px solid var(--line); }
 
 /* ── Lists and filters still shared by the search screens ─────────────────── */
 .table-wrap { overflow-x: auto; }

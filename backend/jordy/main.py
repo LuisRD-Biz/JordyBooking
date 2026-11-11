@@ -12,6 +12,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from jordy.agenda import router as agenda_router
 from jordy.api import router
 from jordy.auth import router as auth_router
 from jordy.commercial import recover_summaries
@@ -87,6 +88,7 @@ async def security_headers(request: Request, call_next):
 
 app.include_router(router)
 app.include_router(auth_router)
+app.include_router(agenda_router)
 app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)

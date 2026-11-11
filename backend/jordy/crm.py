@@ -1,6 +1,7 @@
 """Sales opportunities, immutable quotation versions and signature appointments."""
 
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends
 from pydantic import AwareDatetime, Field, model_validator
@@ -8,9 +9,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from jordy.api import authenticate
+from jordy.config import settings
 from jordy.customers import save_customer
 from jordy.db import get_session
-from jordy.domain import Conflict, RuleViolation
+from jordy.domain import Conflict, RuleViolation, day_bounds
 from jordy.models import Appointment, Booking, Customer, Lead, Package, Quote, Resource
 from jordy.repository import require
 from jordy.schemas import CustomerInput, Input
@@ -73,6 +75,8 @@ def dashboard(session: DB):
     def count(model, *conditions):
         return session.scalar(select(func.count()).select_from(model).where(*conditions))
 
+    zone = settings().studio_timezone
+    today_start, today_end = day_bounds(now().astimezone(ZoneInfo(zone)).date(), zone)
     return {
         "upcoming": count(Booking, Booking.status == "confirmed", Booking.ends_at >= now()),
         "pending": count(Booking, Booking.status == "pending_approval"),
@@ -85,6 +89,13 @@ def dashboard(session: DB):
         "quotes": count(Quote),
         "appointments": count(
             Appointment, Appointment.status == "scheduled", Appointment.ends_at >= now()
+        ),
+        "signatures_today": count(
+            Appointment,
+            Appointment.status == "scheduled",
+            Appointment.kind == "contract",
+            Appointment.starts_at >= today_start,
+            Appointment.starts_at < today_end,
         ),
     }
 

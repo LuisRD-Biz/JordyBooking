@@ -52,7 +52,7 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
   const [today, setToday] = useState(() => dayKey(new Date(), zone));
   const [day, setDay] = useState(today);
   const [seasonAlways, setSeasonAlwaysState] = useState(() => localStorage.getItem(SEASON_KEY) === '1');
-  const loadedAt = useRef(0);
+  const loadedAt = useRef(0), loadedOnce = useRef(false);
 
   // The booking sheet opens over whatever page was showing.
   const baseRef = useRef<Route>({name: HOME, path: HOME});
@@ -73,7 +73,9 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
       setError(`No se pudo actualizar la información del estudio: ${(err as Error).message}`);
     } finally {
       setToday(dayKey(new Date(), zone));
-      setRevision(value => value + 1);
+      // The first load fills an empty screen; only later reloads invalidate what pages fetched.
+      if (loadedOnce.current) setRevision(value => value + 1);
+      loadedOnce.current = true;
       setLoading(false);
     }
   }, [zone]);
@@ -118,7 +120,7 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
           {base.name === 'clientes' && <CustomerDirectory zone={zone} onOpenBooking={openBooking} revision={revision} onChanged={reload}/>}
           {base.name === 'oportunidades' && <CRM zone={zone} packages={data.packages} revision={revision} onChanged={reload} onBooking={row => studio.open('booking', row)} onOpenBooking={openBooking}/>}
           {base.name === 'mas' && <More onLogout={onLogout}/>}
-          {base.name === 'reservaciones' && <BookingSearch zone={zone} onOpen={openBooking} revision={revision}/>}
+          {base.name === 'reservaciones' && <BookingSearch key={base.param || 'todas'} status={base.param === 'por-aprobar' ? 'pending_approval' : undefined} zone={zone} onOpen={openBooking} revision={revision}/>}
           {base.name === 'citas' && <Appointments zone={zone} revision={revision} onChanged={reload}/>}
           {base.name === 'paquetes' && <Packages/>}
           {base.name === 'equipo' && <Team/>}
