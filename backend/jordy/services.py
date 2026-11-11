@@ -37,8 +37,22 @@ def now():
     return datetime.now(UTC)
 
 
+SYSTEM_ACTOR = "jordy-admin"  # Historical default: workers, scripts and admin-key access.
+
+
+def actor(session: Session) -> str:
+    """Who is acting in this unit of work: an account's e-mail, "local" or the system.
+
+    The API binds it to the session from the authenticated principal (`api.bind_actor`), so
+    every existing `audit(...)` call records the real user without changing its signature.
+    """
+    return (session.info.get("actor") or SYSTEM_ACTOR)[:100]
+
+
 def audit(session: Session, action: str, entity_id: int):
-    session.add(AuditLog(action=action, entity_id=entity_id, created_at=now()))
+    session.add(
+        AuditLog(action=action, entity_id=entity_id, actor=actor(session), created_at=now())
+    )
 
 
 def capabilities(session: Session, codes):
@@ -235,7 +249,17 @@ def transition(session: Session, identity: int, target: str):
     return booking
 
 
-def reschedule(session: Session, identity: int, start: datetime, location: str):
+def change_location(session: Session, identity: int, location: str):
+    booking = require(session, Booking, identity, lock=True)
+    if booking.status not in {"pending_approval", "confirmed"}:
+        raise Conflict("No se puede editar una reservación cerrada.")
+    if booking.location != location:
+        booking.location = location
+        audit(session, "booking.location_changed", identity)
+    return booking
+
+
+def reschedule(session: Session, identity: int, start: datetime, location: str | None = None):
     booking = require(session, Booking, identity, lock=True)
     if booking.status not in {"pending_approval", "confirmed"}:
         raise Conflict("No se puede reprogramar esta reservación.")
@@ -252,7 +276,8 @@ def reschedule(session: Session, identity: int, start: datetime, location: str):
     session.flush()
     booking.starts_at = start
     booking.ends_at = start + timedelta(minutes=booking.snapshot["duration_minutes"])
-    booking.location = location
+    if location is not None:  # Omitted: keep the place already agreed.
+        booking.location = location
     if booking.status == "confirmed":
         occupy(session, booking)
     audit(session, "booking.rescheduled", identity)

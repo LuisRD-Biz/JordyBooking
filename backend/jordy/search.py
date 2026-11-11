@@ -9,7 +9,7 @@ from pydantic import Field, model_validator
 from sqlalchemy import case, exists, func, or_, select
 from sqlalchemy.orm import Session
 
-from jordy.api import authenticate
+from jordy.api import ADMIN
 from jordy.config import settings
 from jordy.customers import normalized_phone, possible_duplicates
 from jordy.db import get_session
@@ -17,7 +17,7 @@ from jordy.domain import RuleViolation
 from jordy.models import Appointment, Booking, BookingDocument, Contract, Customer, Lead
 from jordy.schemas import BookingOutput, CustomerInput, Input
 
-router = APIRouter(prefix="/api/search", dependencies=[Depends(authenticate)])
+router = APIRouter(prefix="/api/search", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
 
 

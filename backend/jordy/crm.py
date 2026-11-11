@@ -8,7 +8,7 @@ from pydantic import AwareDatetime, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from jordy.api import authenticate
+from jordy.api import ADMIN
 from jordy.config import settings
 from jordy.customers import save_customer
 from jordy.db import get_session
@@ -16,9 +16,9 @@ from jordy.domain import Conflict, RuleViolation, day_bounds
 from jordy.models import Appointment, Booking, Customer, Lead, Package, Quote, Resource
 from jordy.repository import require
 from jordy.schemas import CustomerInput, Input
-from jordy.services import audit, now, snapshot
+from jordy.services import actor, audit, now, snapshot
 
-router = APIRouter(prefix="/api", dependencies=[Depends(authenticate)])
+router = APIRouter(prefix="/api", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
 
 
@@ -173,6 +173,7 @@ def create_quote(identity: int, data: QuoteInput, session: DB):
             version=version,
             snapshot={**snapshot(package), "kind": package.kind},
             created_at=now(),
+            actor=actor(session),
         )
         session.add(quote)
         session.flush()

@@ -24,6 +24,7 @@ from jordy.db import build_engine
 from jordy.documents import router as document_router
 from jordy.domain import Conflict, RuleViolation
 from jordy.messaging.api import router as messaging_router
+from jordy.notes import router as notes_router
 from jordy.repository import NotFound
 from jordy.search import router as search_router
 
@@ -89,6 +90,7 @@ async def security_headers(request: Request, call_next):
 app.include_router(router)
 app.include_router(auth_router)
 app.include_router(agenda_router)
+app.include_router(notes_router)
 app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)

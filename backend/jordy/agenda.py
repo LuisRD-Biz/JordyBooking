@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jordy.api import authenticate
+from jordy.api import ADMIN
 from jordy.config import settings
 from jordy.db import get_session
 from jordy.domain import RuleViolation, day_bounds
@@ -22,7 +22,7 @@ from jordy.models import Appointment, Booking, Customer, Occupancy, Resource
 MAX_DAYS = 62  # Two full months: the visible month plus the weeks around it.
 APPOINTMENT_LABELS = {"contract": "Firma de contrato", "meeting": "Reunión"}
 
-router = APIRouter(prefix="/api", dependencies=[Depends(authenticate)])
+router = APIRouter(prefix="/api", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
 
 

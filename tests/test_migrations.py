@@ -39,7 +39,7 @@ def test_upgrade_downgrade_upgrade_isolated_schema(database, monkeypatch):
             with engine.connect() as connection:
                 assert connection.scalar(text("SELECT count(*) FROM daily_summaries")) == 1
                 assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                    "b4d2e6f8a1c3"
+                    "c7e1a9d3f5b2"
                 )
             command.upgrade(config, "head")
         finally:

@@ -14,7 +14,7 @@ from pypdf import PdfReader
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jordy.api import authenticate
+from jordy.api import ADMIN
 from jordy.config import settings
 from jordy.db import get_session
 from jordy.domain import Conflict, RuleViolation
@@ -22,9 +22,9 @@ from jordy.models import Booking, BookingDocument, Customer
 from jordy.repository import require
 from jordy.schemas import Input
 from jordy.search import Filters, date_predicates, paginate
-from jordy.services import audit, now
+from jordy.services import actor, audit, now
 
-router = APIRouter(prefix="/api", dependencies=[Depends(authenticate)])
+router = APIRouter(prefix="/api", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
 
 
@@ -172,6 +172,7 @@ async def upload(
                 sha256=digest.hexdigest(),
                 notes=notes,
                 created_at=now(),
+                actor=actor(session),
             )
             if previous:
                 previous.is_current = False

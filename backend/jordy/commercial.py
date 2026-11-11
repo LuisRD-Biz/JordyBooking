@@ -321,7 +321,8 @@ def generate_summary(session, day):
         "jordy_confirmed": [
             serialize(o)
             for o in operations
-            if o.actor == "jordy-admin" and o.action in {"booking.confirmed", "booking.rescheduled"}
+            # Only people confirm or reschedule; the actor is now the account that did it.
+            if o.action in {"booking.confirmed", "booking.rescheduled"}
         ],
         "manual_notes": [serialize(n) for n in notes],
         "commercial_plans": [serialize(p) for p in proposals],

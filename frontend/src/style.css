@@ -457,6 +457,39 @@ dialog > form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .event > svg { color: var(--ink-3); }
 .day-empty, .day-actions { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-top: 1px solid var(--line); }
 
+/* ── Booking sheet ────────────────────────────────────────────────────────── */
+.sheet-body.flush { padding: 0; }
+.sheet-body.flush > .error { margin: var(--s-4); }
+.sheet-summary { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.sheet-summary .facts { color: var(--ink); font-size: var(--fs-15); }
+.sheet-summary .facts svg { flex-shrink: 0; color: var(--ink-2); }
+.sheet-summary a.secondary { flex: 1; text-decoration: none; }
+.tabbar { position: sticky; top: 0; z-index: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.tabbar button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 0 var(--s-1); border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--ink-2); font-size: var(--fs-14); font-weight: 600; }
+.tabbar button[aria-selected='true'] { border-bottom-color: var(--accent); color: var(--ink); }
+.tabbar b { min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font-size: var(--fs-12); line-height: 20px; }
+.tabpanel { padding: var(--s-4); }
+.plain-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.plain-list li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--line); }
+.plain-list li > strong { flex-basis: 100%; }
+.plain-list li > span { flex: 1 1 200px; color: var(--ink-2); font-size: var(--fs-14); }
+
+.notes { display: flex; flex-direction: column; gap: var(--s-4); }
+.notes ol { display: flex; flex-direction: column; gap: var(--s-3); margin: 0; padding: 0; list-style: none; }
+.notes li { padding: var(--s-3); border-radius: var(--r-md); background: var(--surface-2); }
+.notes li header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-1) var(--s-3); margin-bottom: var(--s-1); font-size: var(--fs-14); }
+.notes li time { color: var(--ink-2); font-size: var(--fs-12); }
+.note-form { display: flex; flex-direction: column; gap: var(--s-2); }
+.note-form small { color: var(--ink-3); }
+
+.action-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); flex-shrink: 0; padding: var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
+.action-bar .wide { grid-column: 1 / -1; }
+.action-bar button { padding: 0 var(--s-2); }
+@media (min-width: 768px) {
+  .sheet-summary, .tabpanel { padding: var(--s-5); }
+  .action-bar { padding: var(--s-4) var(--s-5); }
+}
+
 /* ── Lists and filters still shared by the search screens ─────────────────── */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--fs-14); }
