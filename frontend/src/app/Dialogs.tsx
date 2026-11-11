@@ -3,7 +3,8 @@ import {Ban, CalendarPlus, ChevronRight, FileCheck2, UserPlus} from 'lucide-reac
 import {api} from '../api';
 import {AppointmentDetail, BlockDetail} from '../calendar/EventDetails';
 import type {AgendaItem} from '../calendar/agenda';
-import {AppointmentForm, BookingForm, CustomerEditor} from '../features';
+import {AppointmentForm, BookingForm} from '../booking/forms';
+import {CustomerEditor} from '../pages/Customers';
 import {capitalize, dayLabel, localInput, toUtc} from '../lib/dates';
 import {Editor, Modal, PackageEditor, ResourceEditor} from '../shared';
 import type {Row} from '../shared';
@@ -74,7 +75,7 @@ function EditBooking({booking, onClose}: {booking: Row; onClose: () => void}) {
 
 /** Every dialog that can be opened from more than one screen. */
 export function Dialogs({dialog, close}: {dialog: Dialog | null; close: () => void}) {
-  const {zone, today, selectedDay, packages, resources, changed} = useStudio();
+  const {zone, today, selectedDay, resources, changed} = useStudio();
   if (!dialog) return null;
   const row = dialog.row;
   // New records start from the selected day; a day already gone falls back to today.
@@ -90,9 +91,9 @@ export function Dialogs({dialog, close}: {dialog: Dialog | null; close: () => vo
     case 'create':
       return <CreateMenu initialDay={day} onClose={close}/>;
     case 'booking':
-      return <BookingForm packages={packages} zone={zone} initial={row?.starts_at || row?.quote_id ? row : {...row, starts_at: toUtc(`${day}T10:00`, zone)}} onClose={close} onSaved={() => changed('Solicitud creada')}/>;
+      return <BookingForm initial={row?.starts_at || row?.quote_id ? row : {...row, starts_at: toUtc(`${day}T10:00`, zone)}} onClose={close} onSaved={() => changed('Solicitud creada')}/>;
     case 'appointment':
-      return <AppointmentForm booking={row?.id ? row : undefined} day={day} zone={zone} onClose={close} onSaved={() => changed('Cita programada')}/>;
+      return <AppointmentForm booking={row?.id ? row : undefined} day={day} onClose={close} onSaved={() => changed('Cita programada')}/>;
     case 'customer':
       return <CustomerEditor customer={row?.id ? row : undefined} onClose={close} onSaved={() => changed()}/>;
     case 'event-appointment':

@@ -4,6 +4,7 @@ RUN npm install --global pnpm@11.25.0
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/index.html frontend/tsconfig.json ./
+COPY frontend/public/ ./public/
 COPY frontend/src/ ./src/
 RUN pnpm run build
 

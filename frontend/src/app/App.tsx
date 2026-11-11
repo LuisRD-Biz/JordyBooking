@@ -4,9 +4,12 @@ import {all, api} from '../api';
 import {LoginCard} from '../auth';
 import {BookingSheet} from '../booking/BookingSheet';
 import {CalendarPage} from '../calendar/CalendarPage';
-import {Appointments, BookingSearch, CRM, CustomerDirectory} from '../features';
 import {dayKey, isDay} from '../lib/dates';
 import {Activity} from '../pages/Activity';
+import {Appointments} from '../pages/Appointments';
+import {Bookings} from '../pages/Bookings';
+import {Customers} from '../pages/Customers';
+import {Leads} from '../pages/Leads';
 import {Packages, Team} from '../pages/Catalog';
 import {More} from '../pages/More';
 import {Season} from '../pages/Season';
@@ -105,7 +108,6 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
     setSeasonAlways: value => { localStorage.setItem(SEASON_KEY, value ? '1' : '0'); setSeasonAlwaysState(value); },
   }), [user, zone, today, selectedDay, data, revision, reload, seasonAlways, month]);
 
-  const openBooking = (booking: Row) => studio.openBooking(booking.id);
   const bookingId = route.name === 'reserva' ? Number(route.param) : 0;
 
   return <StudioContext.Provider value={studio}>
@@ -117,11 +119,11 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
         <main className="main">
           {error && <div className="error" role="alert"><AlertCircle size={18}/><span>{error}. Se muestran los últimos datos cargados.</span><button className="text-btn" onClick={() => reload()}>Reintentar</button></div>}
           {base.name === HOME && <CalendarPage day={selectedDay} onDay={value => { setDay(value); navigate(`${HOME}/${value}`, {replace: true}); }}/>}
-          {base.name === 'clientes' && <CustomerDirectory zone={zone} onOpenBooking={openBooking} revision={revision} onChanged={reload}/>}
-          {base.name === 'oportunidades' && <CRM zone={zone} packages={data.packages} revision={revision} onChanged={reload} onBooking={row => studio.open('booking', row)} onOpenBooking={openBooking}/>}
+          {base.name === 'clientes' && <Customers/>}
+          {base.name === 'oportunidades' && <Leads/>}
           {base.name === 'mas' && <More onLogout={onLogout}/>}
-          {base.name === 'reservaciones' && <BookingSearch key={base.param || 'todas'} status={base.param === 'por-aprobar' ? 'pending_approval' : undefined} zone={zone} onOpen={openBooking} revision={revision}/>}
-          {base.name === 'citas' && <Appointments zone={zone} revision={revision} onChanged={reload}/>}
+          {base.name === 'reservaciones' && <Bookings key={base.param || 'todas'} initial={base.param === 'por-aprobar' ? 'pending' : 'all'}/>}
+          {base.name === 'citas' && <Appointments/>}
           {base.name === 'paquetes' && <Packages/>}
           {base.name === 'equipo' && <Team/>}
           {base.name === 'temporada' && <Season/>}
