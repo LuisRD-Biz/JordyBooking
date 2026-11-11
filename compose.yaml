@@ -31,6 +31,8 @@ services:
       DATABASE_URL: postgresql+psycopg://jordy_app@db:5432/jordy
       PGPASSWORD: ${JORDY_APP_PASSWORD:-}
       ADMIN_API_KEY: ${ADMIN_API_KEY:-}
+      ADMIN_KEY_HEADER: ${ADMIN_KEY_HEADER:-true}
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
       STUDIO_TIMEZONE: ${STUDIO_TIMEZONE:-America/Mexico_City}
       LOCAL_PANEL_ACCESS: "false"
       PANEL_ORIGIN: "http://127.0.0.1:${PANEL_PORT:-8000}"
