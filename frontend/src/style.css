@@ -423,12 +423,12 @@ dialog[open] { display: flex; flex-direction: column; animation: sheet-in 0.22s 
 dialog.side { height: 94dvh; max-height: 94dvh; }
 dialog::backdrop { background: var(--scrim); }
 @keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } }
-dialog > form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+dialog > form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); flex-shrink: 0; padding: var(--s-4) var(--s-2) var(--s-3) var(--s-4); border-bottom: 1px solid var(--line); }
 .modal-head > div { min-width: 0; padding-top: 6px; }
 .modal-head h2 { font-size: 1.25rem; overflow-wrap: anywhere; }
 .modal-head p { margin-top: 2px; color: var(--ink-2); font-size: var(--fs-14); }
-.form-fields, .sheet-body, .detail-body { flex: 1; min-height: 0; padding: var(--s-4); overflow-y: auto; overscroll-behavior: contain; }
+.form-fields, .sheet-body, .detail-body { flex: 1 1 auto; min-height: 0; padding: var(--s-4); overflow-y: auto; overscroll-behavior: contain; }
 .form-fields { display: flex; flex-direction: column; gap: var(--s-4); }
 .modal-footer, .detail-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); flex-shrink: 0; padding: var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
 .modal-footer > *, .detail-actions > * { flex: 1 1 auto; }
