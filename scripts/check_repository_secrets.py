@@ -10,6 +10,7 @@ RULES = {
     "sk-api-token": rb"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{40,}",
     "aws-access-key": rb"\bAKIA[A-Z0-9]{16}\b",
 }
+BINARY_MEDIA = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".otf")
 
 
 def git(*args):
@@ -38,6 +39,8 @@ def main():
             if sha in seen:
                 continue
             seen.add(sha)
+            if name.lower().endswith(BINARY_MEDIA):
+                continue
             content = git("cat-file", "blob", sha.decode())
             for rule, pattern in RULES.items():
                 if re.search(pattern, content):

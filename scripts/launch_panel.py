@@ -78,18 +78,14 @@ def configuration():
             "Falta la configuración local (.env). No se creó ni modificó la base de datos."
         )
     if not (ROOT / "frontend/dist/index.html").is_file():
-        raise RuntimeError(
-            "Falta preparar el panel de React. Ejecuta pnpm run build en frontend."
-        )
+        raise RuntimeError("Falta preparar el panel de React. Ejecuta pnpm run build en frontend.")
     try:
         import psycopg  # noqa: F401
         import uvicorn  # noqa: F401
         from dotenv import dotenv_values
         from sqlalchemy.engine import make_url
     except ImportError as exc:
-        raise RuntimeError(
-            "Faltan dependencias. Ejecuta uv sync --locked."
-        ) from exc
+        raise RuntimeError("Faltan dependencias. Ejecuta uv sync --locked.") from exc
     config = dotenv_values(ROOT / ".env")
     url = make_url(config.get("DATABASE_URL", ""))
     if url.host != "127.0.0.1" or url.port != 55433 or url.database != "jordy_panel":
