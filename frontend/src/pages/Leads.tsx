@@ -114,7 +114,7 @@ function LeadDetail({id, onClose}: {id: number; onClose: () => void}) {
     </div>
     {lead && (reopenable || ['new', 'contacted', 'quoted'].includes(lead.status)) && <footer className="modal-footer">
       {['new', 'contacted', 'quoted'].includes(lead.status) && <button className="danger-btn" disabled={busy} onClick={() => act(`/api/leads/${id}/status`, {status: 'lost'}, 'Oportunidad cerrada')}>No se concretó</button>}
-      {lead.status === 'new' && <button className="primary" disabled={busy} onClick={() => act(`/api/leads/${id}/status`, {status: 'contacted'}, 'Marcada como contactada')}>Marcar contactado</button>}
+      {lead.status === 'new' && <button className="confirm" disabled={busy} onClick={() => act(`/api/leads/${id}/status`, {status: 'contacted'}, 'Marcada como contactada')}>Marcar contactado</button>}
       {reopenable && <button className="secondary" disabled={busy} onClick={() => act(`/api/leads/${id}/status`, {status: 'reopen'}, 'Oportunidad reabierta')}>Volver a cotizar</button>}
     </footer>}
   </Modal>;

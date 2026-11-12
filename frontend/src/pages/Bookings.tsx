@@ -45,7 +45,7 @@ export function Bookings({initial = 'all'}: {initial?: Quick}) {
     </ul>}
     {!result.items.length && (loaded ? <Empty title="Sin coincidencias" text="Prueba con otro nombre, otro filtro o un rango de fechas distinto."/> : !error && <p className="muted pad">Buscando…</p>)}
     <Pager result={result} onPage={setPage}/>
-    {filtering && <Editor title="Filtros" saveLabel="Aplicar" onClose={() => setFiltering(false)}
+    {filtering && <Editor title="Filtros" saveLabel="Aplicar" tone="primary" onClose={() => setFiltering(false)}
       fields={[
         {name: 'date_from', label: 'Desde', type: 'date', required: false, value: advanced.date_from},
         {name: 'date_to', label: 'Hasta', type: 'date', required: false, value: advanced.date_to},

@@ -49,7 +49,7 @@ export function AppointmentDetail({item, onClose}: {item: AgendaItem; onClose: (
     </div>
     {item.status === 'scheduled' && <footer className="modal-footer">
       <button className="danger-btn" disabled={busy} onClick={() => run(status, {status: 'cancelled'}, 'Cita cancelada')}>Cancelar cita</button>
-      <button className="primary" disabled={busy} onClick={() => run(status, {status: 'completed'}, 'Cita realizada')}>Marcar realizada</button>
+      <button className="confirm" disabled={busy} onClick={() => run(status, {status: 'completed'}, 'Cita realizada')}>Marcar realizada</button>
     </footer>}
   </Modal>;
 }

@@ -1,9 +1,10 @@
 import React from 'react';
 import {
-  Activity, Aperture, CalendarDays, Camera, ClipboardList, FileCheck2, LogOut, MoreHorizontal,
+  Activity, CalendarDays, Camera, ClipboardList, FileCheck2, LogOut, MoreHorizontal,
   Package, Plus, Settings, Snowflake, Sparkles, Users,
 } from 'lucide-react';
 import {initials, roleLabel} from '../auth';
+import {Logo} from '../ui/Logo';
 import {HOME, goSection, navigate} from './router';
 import type {Route} from './router';
 import {useStudio} from './context';
@@ -61,7 +62,7 @@ export function Sidebar({route, onLogout}: {route: Route; onLogout: () => void})
   );
   return <aside className="sidebar">
     <a className="brand" {...link(HOME)}>
-      <span className="brand-symbol"><Aperture size={24}/></span>
+      <Logo/>
       <span className="brand-name">Jordy Flores<small>Fotografía</small></span>
     </a>
     <button className="primary sidebar-create" onClick={() => open('create')}><Plus size={18}/>Nuevo</button>
@@ -81,7 +82,7 @@ export function Sidebar({route, onLogout}: {route: Route; onLogout: () => void})
 export function Topbar({route}: {route: Route}) {
   const {user} = useStudio();
   return <header className="topbar">
-    <span className="brand-symbol small" aria-hidden="true"><Aperture size={18}/></span>
+    <Logo size="small"/>
     <h1>{TITLES[route.name] || TITLES[HOME]}</h1>
     <a className="avatar" {...link('configuracion', true)} aria-label={`Cuenta de ${user.name}`}>{initials(user.name)}</a>
   </header>;

@@ -1,10 +1,12 @@
-import React from 'react';
-import {CalendarDays, LogOut, Plus, ShieldCheck, Snowflake} from 'lucide-react';
+import React, {useState} from 'react';
+import {CalendarDays, LogOut, Moon, Plus, ShieldCheck, Snowflake} from 'lucide-react';
+import {applyTheme, storedTheme} from '../lib/theme';
 import {PasswordChange} from '../auth';
 import {useStudio} from '../app/context';
 
 export function Settings({onLogout}: {onLogout: () => void}) {
   const {user, zone, open, seasonAlways, setSeasonAlways} = useStudio();
+  const [dark, setDark] = useState(storedTheme() === 'dark');
   return <div className="two-columns">
     <section className="panel pad stack">
       <ShieldCheck size={26} aria-hidden="true"/>
@@ -19,6 +21,12 @@ export function Settings({onLogout}: {onLogout: () => void}) {
       <button className="secondary" onClick={onLogout}><LogOut size={16}/>Cerrar sesión</button>
     </section>
     <div className="stack">
+      <section className="panel pad stack">
+        <Moon size={26} aria-hidden="true"/>
+        <h2>Apariencia</h2>
+        <p className="muted">El modo oscuro invierte la paleta: fondo espresso y texto crema. Se recuerda en este dispositivo.</p>
+        <label className="check-label"><input type="checkbox" checked={dark} onChange={e => { setDark(e.target.checked); applyTheme(e.target.checked ? 'dark' : 'light'); }}/>Usar modo oscuro</label>
+      </section>
       <section className="panel pad stack">
         <Snowflake size={26} aria-hidden="true"/>
         <h2>Temporada navideña</h2>

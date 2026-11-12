@@ -53,7 +53,7 @@ export function Notes({bookingId, onCount}: {bookingId: number; onCount: (count:
     {error && <div className="error" role="alert"><AlertCircle size={18}/>{error}</div>}
     <form className="note-form" onSubmit={add}>
       <textarea aria-label="Nueva nota" placeholder="Escribe una nota…" rows={2} maxLength={MAX} value={draft} onChange={event => setDraft(event.target.value)}/>
-      <button className="primary" disabled={busy || !draft.trim()}><Send size={16}/>{busy ? 'Guardando…' : 'Agregar nota'}</button>
+      <button className="confirm" disabled={busy || !draft.trim()}><Send size={16}/>{busy ? 'Guardando…' : 'Agregar nota'}</button>
       <small>Las notas no se editan ni se borran; si algo cambia, agrega otra.</small>
     </form>
   </div>;

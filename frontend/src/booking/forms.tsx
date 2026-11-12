@@ -63,7 +63,7 @@ export function BookingForm({initial = {}, onClose, onSaved}: {initial?: Row; on
   const {packages, zone} = useStudio();
   const [contact, setContact] = useState<Row>(initial.customer_id ? {customer_id: initial.customer_id, customer_name: initial.customer_name} : {new_customer: BLANK});
   const key = useRef(crypto.randomUUID());
-  return <Editor title={initial.quote_id ? 'Solicitud desde cotización' : 'Nueva reservación'} subtitle="Queda por aprobar: no aparta personal ni equipo hasta que la apruebes." saveLabel="Crear solicitud" onClose={onClose}
+  return <Editor title={initial.quote_id ? 'Solicitud desde cotización' : 'Nueva reservación'} subtitle="Queda por aprobar: no aparta personal ni equipo hasta que la apruebes." saveLabel="Crear solicitud" tone="primary" onClose={onClose}
     fields={[
       {name: 'package_id', label: 'Paquete', type: 'select', value: initial.package_id, options: packages.map(p => ({value: p.id, label: `${p.name} · ${money(p.price, p.currency)}`}))},
       {name: 'starts_at', label: 'Fecha y hora', type: 'datetime-local', value: initial.starts_at ? localInput(initial.starts_at, zone) : undefined, hint: `Hora del estudio (${zone.split('/').pop()?.replaceAll('_', ' ')}).`},

@@ -65,7 +65,7 @@ export function Modal({title, subtitle, children, onClose, side = false, header,
   </dialog>;
 }
 
-export function Editor({title, subtitle, fields, onSave, onClose, children, saveLabel = 'Guardar', danger = false}: {title: string; subtitle?: string; fields: Field[]; onSave: (data: Row) => Promise<void> | void; onClose: () => void; children?: React.ReactNode; saveLabel?: string; danger?: boolean}) {
+export function Editor({title, subtitle, fields, onSave, onClose, children, saveLabel = 'Guardar', danger = false, tone = 'confirm'}: {title: string; subtitle?: string; fields: Field[]; onSave: (data: Row) => Promise<void> | void; onClose: () => void; children?: React.ReactNode; saveLabel?: string; danger?: boolean; tone?: 'confirm' | 'primary'}) {
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,8 +82,9 @@ export function Editor({title, subtitle, fields, onSave, onClose, children, save
         {error && <div className="error" role="alert"><AlertCircle size={18}/>{error}</div>}
       </div>
       <footer className="modal-footer">
-        <button type="button" className="secondary" onClick={onClose} disabled={busy}>{danger ? 'No, volver' : 'Cancelar'}</button>
-        <button className={danger ? 'danger-btn solid' : 'primary'} disabled={busy}>{busy ? 'Guardando…' : saveLabel}</button>
+        {/* Leaving a form is not destructive: outlined. The filled red is for what cannot be undone. */}
+        <button type="button" className={danger ? 'secondary' : 'danger-btn'} onClick={onClose} disabled={busy}>{danger ? 'No, volver' : 'Cancelar'}</button>
+        <button className={danger ? 'danger-btn solid' : tone} disabled={busy}>{busy ? 'Guardando…' : saveLabel}</button>
       </footer>
     </form>
   </Modal>;

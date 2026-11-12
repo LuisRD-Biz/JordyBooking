@@ -1,64 +1,57 @@
-"""Render the panel's PWA icons: the aperture mark in ivory on the studio's ink colour.
+"""Render the panel's icons: the "JF" monogram in crema on espresso with a calabaza rule.
 
 Run once when the mark or the palette changes (needs Pillow, not a project dependency):
 
-    uv run --with pillow python scripts/make_panel_icons.py
+    uv run --no-project --with pillow python scripts/make_panel_icons.py
 """
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
-OUT = Path(__file__).resolve().parents[1] / "frontend" / "public"
-INK, IVORY = (43, 46, 39), (255, 254, 251)
-# The aperture icon on a 24-unit grid: a circle of radius 10 and six blades.
-BLADES = [
-    ((14.31, 8), (20.05, 17.94)),
-    ((9.69, 8), (21.17, 8)),
-    ((7.38, 12), (13.12, 2.06)),
-    ((9.69, 16), (3.95, 6.06)),
-    ((14.31, 16), (2.83, 16)),
-    ((16.62, 12), (10.88, 21.94)),
-]
+ROOT = Path(__file__).resolve().parents[1] / "frontend"
+OUT = ROOT / "public"
+FONT = ROOT / "brand" / "Chewy-Regular.ttf"
+ESPRESSO, CREMA, CALABAZA = (59, 36, 24), (246, 235, 221), (217, 119, 43)
 SUPERSAMPLE = 4
+SLANT = 0.14  # Same lean as the monogram in the interface (skewX(-8deg)).
 
 
 def render(size: int, mark: float, rounded: bool) -> Image.Image:
-    """`mark` is the share of the canvas the 24-unit grid occupies."""
+    """`mark` is the share of the canvas height taken by the letters."""
     side = size * SUPERSAMPLE
     image = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     radius = side * 0.22 if rounded else 0
-    draw.rounded_rectangle((0, 0, side - 1, side - 1), radius=radius, fill=INK)
-    unit = side * mark / 24
-    offset = (side - 24 * unit) / 2
-    stroke = max(2, round(unit * 1.6))
+    draw.rounded_rectangle((0, 0, side - 1, side - 1), radius=radius, fill=ESPRESSO)
 
-    def point(x, y):
-        return offset + x * unit, offset + y * unit
+    # Letters on their own layer so they can lean without bending the background.
+    letters = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    font = ImageFont.truetype(str(FONT), round(side * mark))
+    pen = ImageDraw.Draw(letters)
+    left, top, right, bottom = pen.textbbox((0, 0), "JF", font=font)
+    x = (side - (right - left)) / 2 - left
+    y = (side - (bottom - top)) / 2 - top - side * 0.03
+    pen.text((x, y), "JF", font=font, fill=CREMA)
+    letters = letters.transform(
+        (side, side), Image.AFFINE, (1, SLANT, -SLANT * side / 2, 0, 1, 0), Image.BICUBIC
+    )
+    image.alpha_composite(letters)
 
-    cx, cy = point(12, 12)
-    r = 10 * unit + stroke / 2  # Pillow strokes inwards; the mark's stroke is centred.
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=IVORY, width=stroke)
-    for start, end in BLADES:
-        a, b = point(*start), point(*end)
-        draw.line((a, b), fill=IVORY, width=stroke)
-        for x, y in (a, b):  # round caps
-            draw.ellipse(
-                (x - stroke / 2, y - stroke / 2, x + stroke / 2, y + stroke / 2), fill=IVORY
-            )
+    rule = side * 0.045
+    inset = side * (0.2 if rounded else 0.28)
+    base = side * (0.8 if rounded else 0.74)
+    draw.rounded_rectangle((inset, base, side - inset, base + rule), radius=rule / 2, fill=CALABAZA)
     return image.resize((size, size), Image.LANCZOS)
 
 
 def main():
-    OUT.mkdir(parents=True, exist_ok=True)
-    render(192, 0.62, rounded=True).save(OUT / "icon-192.png", optimize=True)
-    render(512, 0.62, rounded=True).save(OUT / "icon-512.png", optimize=True)
+    render(192, 0.5, rounded=True).save(OUT / "icon-192.png", optimize=True)
+    render(512, 0.5, rounded=True).save(OUT / "icon-512.png", optimize=True)
     # Maskable: full-bleed background, mark inside the central safe zone.
-    render(512, 0.5, rounded=False).save(OUT / "icon-maskable-512.png", optimize=True)
-    render(180, 0.62, rounded=False).convert("RGB").save(
-        OUT / "apple-touch-icon.png", optimize=True
-    )
+    render(512, 0.36, rounded=False).save(OUT / "icon-maskable-512.png", optimize=True)
+    render(180, 0.5, rounded=False).convert("RGB").save(OUT / "apple-touch-icon.png", optimize=True)
+    render(48, 0.56, rounded=True).save(OUT / "favicon-48.png", optimize=True)
 
 
 if __name__ == "__main__":

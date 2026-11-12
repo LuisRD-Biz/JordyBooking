@@ -21,3 +21,5 @@
 !frontend/public/*.png
 !frontend/public/*.svg
 !frontend/public/*.webmanifest
+!frontend/public/fonts/*.woff2
+!frontend/public/fonts/*.txt

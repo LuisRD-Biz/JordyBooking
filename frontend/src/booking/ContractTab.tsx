@@ -99,11 +99,11 @@ export function ContractTab({booking, contract}: {booking: Row; contract: Row | 
       {busy && <progress max={100} value={progress!} aria-label="Subiendo archivo"/>}
       {stage === 'none' && <button className="primary" disabled={busy} onClick={choose}><Upload size={16}/>{busy ? `Subiendo ${progress}%` : 'Subir contrato'}</button>}
       {stage === 'none' && canSign && <button className="text-btn" onClick={() => setDialog('sign')}>Ya está firmado en papel: registrar la firma</button>}
-      {stage === 'uploaded' && canSign && <button className="primary" onClick={() => setDialog('sign')}><Check size={16}/>Registrar firma</button>}
+      {stage === 'uploaded' && canSign && <button className="confirm" onClick={() => setDialog('sign')}><Check size={16}/>Registrar firma</button>}
       {stage === 'signed' && (contractFiles.length
         ? <button className="primary" onClick={() => setDialog('link')}><FileText size={16}/>Vincular archivo</button>
         : <button className="primary" disabled={busy} onClick={choose}><Upload size={16}/>{busy ? `Subiendo ${progress}%` : 'Subir contrato firmado'}</button>)}
-      {stage === 'linked' && pending && <button className="primary" onClick={() => open('approve', booking)}><Check size={16}/>Aprobar reservación</button>}
+      {stage === 'linked' && pending && <button className="confirm" onClick={() => open('approve', booking)}><Check size={16}/>Aprobar reservación</button>}
     </section>
     {error && <div className="error" role="alert"><AlertCircle size={18}/>{error}</div>}
 

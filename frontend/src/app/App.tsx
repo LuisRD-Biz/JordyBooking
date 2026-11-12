@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {AlertCircle, Aperture, CheckCircle2} from 'lucide-react';
+import {AlertCircle, CheckCircle2} from 'lucide-react';
+import {Logo} from '../ui/Logo';
 import {all, api} from '../api';
 import {LoginCard} from '../auth';
 import {BookingSheet} from '../booking/BookingSheet';
@@ -39,7 +40,7 @@ export function App() {
     return () => window.removeEventListener('session-expired', expired);
   }, []);
 
-  if (checking) return <div className="login-page"><Aperture className="spin" size={36}/><p>Abriendo el estudio…</p></div>;
+  if (checking) return <div className="login-page"><Logo size="large" pulse/><p>Abriendo el estudio…</p></div>;
   if (!user) return <LoginCard local={local} error={loginError} onLogin={account => { setLoginError(''); goSection(HOME); setUser(account); }}/>;
   return <StudioApp user={user} onLogout={async () => {
     try { await api('/auth/logout', 'POST'); } finally { setUser(null); }

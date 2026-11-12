@@ -106,8 +106,8 @@ function ActionBar({booking, onContract}: {booking: Row; onContract: () => void}
   const locked = booking.kind === 'event' && !!booking.contract;
   return <footer className="action-bar">
     {needsContract && <button className="primary wide" onClick={onContract}><FileCheck2 size={18}/>Registrar contrato</button>}
-    {pending && !needsContract && <button className="primary wide" onClick={() => open('approve', booking)}><Check size={18}/>Aprobar</button>}
-    {!pending && finished && <button className="primary wide" onClick={() => open('complete', booking)}><CheckCheck size={18}/>Completar</button>}
+    {pending && !needsContract && <button className="confirm wide" onClick={() => open('approve', booking)}><Check size={18}/>Aprobar</button>}
+    {!pending && finished && <button className="confirm wide" onClick={() => open('complete', booking)}><CheckCheck size={18}/>Completar</button>}
     <button className="secondary" onClick={() => open('edit', booking)}><Pencil size={16}/>Editar</button>
     <button className="secondary" disabled={locked} title={locked ? 'Un evento con contrato no se reprograma desde aquí' : undefined} onClick={() => open('reschedule', booking)}><CalendarClock size={16}/>Reprogramar</button>
     <button className="danger-btn" onClick={() => open('cancel', booking)}><X size={16}/>Cancelar</button>

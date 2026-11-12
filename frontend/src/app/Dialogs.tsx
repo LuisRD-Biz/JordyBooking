@@ -36,7 +36,7 @@ function CreateMenu({initialDay, onClose}: {initialDay: string; onClose: () => v
 function Availability({day, onClose}: {day: string; onClose: () => void}) {
   const {packages, zone} = useStudio();
   const [result, setResult] = useState<Row | null>(null);
-  return <Editor title="Consultar disponibilidad" subtitle="La consulta no aparta recursos; se vuelve a comprobar al confirmar." saveLabel="Consultar" onClose={onClose}
+  return <Editor title="Consultar disponibilidad" subtitle="La consulta no aparta recursos; se vuelve a comprobar al confirmar." saveLabel="Consultar" tone="primary" onClose={onClose}
     fields={[
       {name: 'package_id', label: 'Paquete', type: 'select', options: packages.map(p => ({value: p.id, label: p.name}))},
       {name: 'starts_at', label: 'Fecha y hora', type: 'datetime-local', value: `${day}T10:00`},
