@@ -23,6 +23,8 @@ from jordy.models import (
 STAMP = datetime(2026, 10, 20, 17, tzinfo=UTC)
 ZONE = "America/Mexico_City"
 
+pytestmark = pytest.mark.usefixtures("messaging_enabled")
+
 
 @pytest.mark.parametrize(
     ("body", "kind", "context"),

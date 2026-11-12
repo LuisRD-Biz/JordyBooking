@@ -29,7 +29,7 @@ export function contactLinks() {
 }
 
 export const sections = [
-  ['portafolio', 'Portafolio'], ['bodas', 'Bodas'], ['xv', 'XV años'], ['sesiones', 'Sesiones'], ['contacto', 'Contacto'],
+  ['portafolio', 'Portafolio'], ['servicios', 'Servicios'], ['paquetes', 'Paquetes'], ['proceso', 'Proceso'], ['contacto', 'Contacto'],
 ] as const;
 
 export const whatsappMessages = {

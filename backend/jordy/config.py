@@ -9,6 +9,10 @@ class StudioDatabaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     database_url: str
     studio_timezone: str = "America/Mexico_City"
+    # WhatsApp inbox and the commercial follow-up built on it. Off: their HTTP routes answer
+    # 404, the summary scheduler does not start and Telegram omits conversation follow-ups.
+    # The code and the tables stay in place, so turning it back on needs no migration.
+    messaging_enabled: bool = False
 
 
 class Settings(StudioDatabaseSettings):

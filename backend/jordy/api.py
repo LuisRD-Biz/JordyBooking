@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.security import APIKeyHeader
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from jordy import services
@@ -58,7 +58,21 @@ def authenticate(request: Request, key: Annotated[str | None, Depends(key_header
         raise HTTPException(status_code=401, detail="Acceso administrativo requerido.")
 
 
-router = APIRouter(prefix="/api", dependencies=[Depends(authenticate)])
+def bind_actor(request: Request, session: Annotated[Session, Depends(get_session)]):
+    """Attach the signed-in account to this request's database session for the audit trail.
+
+    Runs after `authenticate`. FastAPI hands the endpoint the same session object, so
+    `services.audit` can sign every change. Admin-key access keeps the system actor.
+    """
+    principal = current_principal(request)
+    if principal is not None:
+        session.info["actor"] = principal.email or "local"
+        session.info["actor_user_id"] = principal.user_id
+
+
+# Every administrative router: authenticate first, then record who is acting.
+ADMIN = [Depends(authenticate), Depends(bind_actor)]
+router = APIRouter(prefix="/api", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
 Limit = Annotated[int, Query(ge=1, le=200)]
 
@@ -232,6 +246,85 @@ def booking_reschedule(identity: int, data: RescheduleInput, session: DB):
             services.reschedule(session, identity, data.starts_at, data.location)
         )
     return result
+
+
+@router.post("/bookings/{identity}/location", response_model=BookingOutput)
+def booking_location(identity: int, data: ApprovalInput, session: DB):
+    """Change the agreed place without touching the schedule. Idempotent."""
+    with session.begin():
+        result = BookingOutput.model_validate(
+            services.change_location(session, identity, data.location)
+        )
+    return result
+
+
+@router.get("/bookings/{identity}/summary")
+def booking_summary(identity: int, session: DB):
+    """Everything a detail view needs about one booking, in a single read."""
+    from jordy.models import Appointment, BookingDocument
+    from jordy.notes import BookingNote
+
+    booking = require(session, Booking, identity)
+    customer = require(session, Customer, booking.customer_id)
+
+    def count(model, *conditions):
+        return session.scalar(
+            select(func.count()).select_from(model).where(model.booking_id == identity, *conditions)
+        )
+
+    assignments = session.execute(
+        select(Occupancy.resource_id, Resource.name, Occupancy.capability)
+        .join(Resource, Resource.id == Occupancy.resource_id)
+        .where(Occupancy.booking_id == identity, Occupancy.active.is_(True))
+        .order_by(Resource.name)
+    )
+    appointments = session.scalars(
+        select(Appointment)
+        .where(Appointment.booking_id == identity)
+        .order_by(Appointment.starts_at, Appointment.id)
+    )
+    contract = booking.contract
+    return {
+        "booking": BookingOutput.model_validate(booking),
+        "customer": {
+            "id": customer.id,
+            "name": customer.name,
+            "phone": customer.phone,
+            "email": customer.email,
+            "contact": customer.contact,
+        },
+        "contract": contract
+        and {
+            "reference": contract.reference,
+            "signed_at": contract.signed_at,
+            "document_id": contract.document_id,
+        },
+        "assignments": [
+            {"resource_id": resource_id, "resource_name": name, "capability": capability}
+            for resource_id, name, capability in assignments
+        ],
+        "appointments": [
+            {
+                "id": a.id,
+                "kind": a.kind,
+                "status": a.status,
+                "starts_at": a.starts_at,
+                "ends_at": a.ends_at,
+                "location": a.location,
+                "notes": a.notes,
+            }
+            for a in appointments
+        ],
+        "counts": {
+            "notes": count(BookingNote),
+            "documents": count(BookingDocument, BookingDocument.is_current.is_(True)),
+            "contract_documents": count(
+                BookingDocument,
+                BookingDocument.is_current.is_(True),
+                BookingDocument.document_type == "contract",
+            ),
+        },
+    }
 
 
 @router.post("/blocks", status_code=201)

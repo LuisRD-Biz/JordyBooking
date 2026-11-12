@@ -54,7 +54,8 @@ class FollowUp:
 @dataclass(frozen=True)
 class Pending:
     bookings: tuple[BookingItem, ...]
-    conversations: tuple[FollowUp, ...]
+    # None when messaging is disabled: there is no inbox to follow up.
+    conversations: tuple[FollowUp, ...] | None
     more_bookings: bool
     more_conversations: bool
 
@@ -90,10 +91,16 @@ def _local_start(day: str, at: str, zone: ZoneInfo) -> datetime:
 
 class AdminReads:
     def __init__(
-        self, engine: Engine, timezone: str, *, clock: Callable[[], datetime] = now
+        self,
+        engine: Engine,
+        timezone: str,
+        *,
+        clock: Callable[[], datetime] = now,
+        messaging_enabled: bool = False,
     ) -> None:
         self._engine = engine
         self._clock = clock
+        self._messaging = messaging_enabled
         self.zone = ZoneInfo(timezone)
 
     def _bookings(self, rows) -> tuple[BookingItem, ...]:
@@ -145,13 +152,15 @@ class AdminReads:
     def pending(self) -> Pending:
         with queries.read_session(self._engine) as session:
             bookings = queries.pending_bookings(session)
-            replies = queries.pending_replies(session)
+            replies = queries.pending_replies(session) if self._messaging else None
         return Pending(
             self._bookings(bookings),
-            tuple(
+            None
+            if replies is None
+            else tuple(
                 FollowUp(row.id, row.last_incoming_at.astimezone(self.zone))
                 for row in replies[:RESULT_LIMIT]
             ),
             len(bookings) > RESULT_LIMIT,
-            len(replies) > RESULT_LIMIT,
+            replies is not None and len(replies) > RESULT_LIMIT,
         )

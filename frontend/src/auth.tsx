@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Aperture, ArrowRight, Eye, EyeOff, KeyRound, ShieldCheck} from 'lucide-react';
+import {ArrowRight, Eye, EyeOff, KeyRound, ShieldCheck} from 'lucide-react';
+import {Logo} from './ui/Logo';
 import {api} from './api';
 import type {Row} from './shared';
 
@@ -37,8 +38,8 @@ export function LoginCard({local, error, onLogin}: {local: boolean, error: strin
     } finally { setBusy(false); }
   }
   return <div className="login-page"><div className="login-card">
-    <div className="brand-symbol"><Aperture size={34}/></div>
-    <span className="eyebrow">JORDY FLORES FOTOGRAFÍA</span>
+    <Logo size="large"/>
+    <p className="brand-title">Jordy Flores <em>Fotografía</em></p>
     <h1>Un lugar para<br/>todo tu estudio.</h1>
     <p>Tu agenda, tu equipo y cada historia por capturar.</p>
     <form onSubmit={submit} noValidate={false}>

@@ -1,0 +1,17 @@
+{
+  "name": "Jordy Flores Fotografía · Estudio",
+  "short_name": "Jordy Estudio",
+  "description": "Panel administrativo de Jordy Flores Fotografía",
+  "lang": "es-MX",
+  "start_url": "/#/calendario",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f6ebdd",
+  "theme_color": "#f6ebdd",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

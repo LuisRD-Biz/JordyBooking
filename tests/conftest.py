@@ -75,3 +75,12 @@ def client(database):
     with TestClient(app, headers={"X-Admin-Key": TEST_KEY}) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def messaging_enabled(monkeypatch):
+    """WhatsApp and commercial follow-up are off by default; their suites opt in."""
+    monkeypatch.setenv("MESSAGING_ENABLED", "true")
+    settings.cache_clear()
+    yield
+    settings.cache_clear()

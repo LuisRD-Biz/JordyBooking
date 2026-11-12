@@ -24,7 +24,7 @@ MIDNIGHT = datetime(2040, 1, 1, tzinfo=ZoneInfo(ZONE))
 
 @pytest.fixture
 def reads(empty_database):
-    return AdminReads(empty_database, ZONE, clock=lambda: NOW)
+    return AdminReads(empty_database, ZONE, clock=lambda: NOW, messaging_enabled=True)
 
 
 @pytest.fixture

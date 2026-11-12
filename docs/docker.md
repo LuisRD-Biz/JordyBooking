@@ -90,6 +90,7 @@ contacta a ningún proveedor.
 | `ADMIN_API_KEY` | Clave administrativa de al menos 32 caracteres. Su rotación también invalida las sesiones firmadas. |
 | `PANEL_PORT`, `POSTGRES_HOST_PORT` | Puertos del host publicados solo en 127.0.0.1. Valores por defecto 8000 y 5432. Los servicios se comunican por la red interna `data`. Los dos puentes para el host permiten publicar cada puerto sin compartir otra red entre panel y BD. |
 | `STUDIO_TIMEZONE` | Zona de la agenda y resúmenes. Por defecto `America/Mexico_City`. |
+| `MESSAGING_ENABLED` | `false` por defecto. Apagada, `/api/messaging/*` y `/api/commercial/*` responden 404, el programador de resúmenes no arranca y `/pendientes` de Telegram omite los seguimientos. El código y las tablas de WhatsApp se conservan. |
 | `documents` | Se monta en `/var/lib/jordy/documents`, fuera de `/app/frontend/dist`. PostgreSQL conserva las versiones, referencias y SHA-256. La descarga se hace por la API autenticada. |
 
 Las dependencias de Python y del panel se instalan desde `uv.lock` y `frontend/pnpm-lock.yaml`, con las versiones de herramientas del proyecto. Para actualizar imágenes base, revisar **etiqueta y digest** en un PR y repetir las pruebas. El contexto de construcción admite los archivos enumerados en `.dockerignore`. Las credenciales se inyectan al ejecutar los contenedores y son accesibles a quien administre Docker. Evita publicar la salida completa de `docker inspect` o `docker compose config`.

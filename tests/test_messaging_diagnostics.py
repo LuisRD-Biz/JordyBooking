@@ -11,6 +11,8 @@ from test_messaging import wa as wa_fixture
 from jordy.messaging.policy import error_diagnostic
 from jordy.models import Message, Outbox
 
+pytestmark = pytest.mark.usefixtures("messaging_enabled")
+
 
 @pytest.fixture
 def wa(database, monkeypatch):

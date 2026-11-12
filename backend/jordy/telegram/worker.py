@@ -39,7 +39,9 @@ def main() -> int:
                 db = StudioDatabaseSettings(_env_file=ROOT / ".env", _env_file_encoding="utf-8-sig")
                 engine = build_read_engine(db.database_url)
                 stack.callback(engine.dispose)
-                reads = AdminReads(engine, db.studio_timezone)
+                reads = AdminReads(
+                    engine, db.studio_timezone, messaging_enabled=db.messaging_enabled
+                )
             except (SettingsError, SQLAlchemyError, ValueError, ZoneInfoNotFoundError):
                 print(
                     "Consultas inactivas. Revisa DATABASE_URL y STUDIO_TIMEZONE.", file=sys.stderr

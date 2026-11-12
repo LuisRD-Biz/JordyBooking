@@ -18,6 +18,8 @@ from jordy.messaging.worker import send_one
 from jordy.models import Conversation, Message
 from jordy.services import now
 
+pytestmark = pytest.mark.usefixtures("messaging_enabled")
+
 
 @pytest.fixture
 def wa(database, monkeypatch):

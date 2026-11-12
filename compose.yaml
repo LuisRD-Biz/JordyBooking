@@ -34,6 +34,7 @@ services:
       ADMIN_KEY_HEADER: ${ADMIN_KEY_HEADER:-true}
       CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
       STUDIO_TIMEZONE: ${STUDIO_TIMEZONE:-America/Mexico_City}
+      MESSAGING_ENABLED: ${MESSAGING_ENABLED:-false}
       LOCAL_PANEL_ACCESS: "false"
       PANEL_ORIGIN: "http://127.0.0.1:${PANEL_PORT:-8000}"
       DOCUMENT_ROOT: /var/lib/jordy/documents

@@ -5,13 +5,14 @@ from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from jordy.agenda import router as agenda_router
 from jordy.api import router
 from jordy.auth import router as auth_router
 from jordy.commercial import recover_summaries
@@ -23,6 +24,7 @@ from jordy.db import build_engine
 from jordy.documents import router as document_router
 from jordy.domain import Conflict, RuleViolation
 from jordy.messaging.api import router as messaging_router
+from jordy.notes import router as notes_router
 from jordy.repository import NotFound
 from jordy.search import router as search_router
 
@@ -58,13 +60,14 @@ async def lifespan(app):
                     pass
             await asyncio.sleep(60)
 
-    task = asyncio.create_task(summaries())
+    task = asyncio.create_task(summaries()) if settings().messaging_enabled else None
     yield
-    task.cancel()
-    try:
-        await task
-    except asyncio.CancelledError:
-        pass
+    if task:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
     get_engine().dispose()
 
 
@@ -86,11 +89,21 @@ async def security_headers(request: Request, call_next):
 
 app.include_router(router)
 app.include_router(auth_router)
+app.include_router(agenda_router)
+app.include_router(notes_router)
 app.include_router(crm_router)
 app.include_router(search_router)
 app.include_router(document_router)
-app.include_router(messaging_router)
-app.include_router(commercial_router)
+
+
+def messaging_enabled():
+    # Runs before authentication: with the feature off these paths do not exist at all.
+    if not settings().messaging_enabled:
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+for optional_router in (messaging_router, commercial_router):
+    app.include_router(optional_router, dependencies=[Depends(messaging_enabled)])
 
 
 @app.get("/health")
