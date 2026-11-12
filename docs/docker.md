@@ -63,6 +63,22 @@ Desde la raíz de este repositorio, Docker Desktop en modo **contenedores Linux*
 
    El estado esperado es `ready`. Abre el panel con **127.0.0.1** y utiliza el valor de `ADMIN_API_KEY` desde tu archivo privado. El origen del navegador debe coincidir exactamente. El acceso automático de escritorio está deshabilitado. Para una base que ya tiene datos comprueba el nombre del proyecto, el volumen y la revisión antes de ejecutar cualquier actualización. Cambiar el nombre del proyecto selecciona otros volúmenes.
 
+## Cargar ejemplos para probar el panel
+
+Con el panel de `jordy-lab` iniciado y listo, ejecuta desde la raíz:
+
+```powershell
+.\scripts\seed-demo.ps1
+```
+
+Recarga el panel y busca «Demo». Camila tiene una sesión confirmada mañana a las 16:00
+y Rafael ha solicitado el mismo horario: intenta aprobarlo y después reprogramarlo. Jimena
+tiene una boda pendiente con cotización y cita de firma. Inés tiene una consulta ficticia
+en Mensajes y una cotización desde la que puedes solicitar otra reserva. Las fechas se
+calculan en la zona del estudio en la primera carga. Repetir el comando conserva tus cambios.
+La carga es manual y atómica. El ejemplo de WhatsApp usa identificadores ficticios y no
+contacta a ningún proveedor.
+
 ## Servicios, variables y límites
 
 | Elemento | Uso |
