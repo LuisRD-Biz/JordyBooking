@@ -1,15 +1,33 @@
+# Credenciales y configuración privada
 .env
 .env.*
 !.env.example
+
+# Python
 .venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
-.local/
+
+# Node y compilaciones
 node_modules/
 dist/
-coverage.xml
+coverage/
 *.tsbuildinfo
+coverage.xml
 .coverage
+
+# Datos locales y archivos generados
+.local/
+*.log
+*.dump
+*.backup
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
