@@ -1,5 +1,3 @@
-"""Run explicitly with pytest. Every invocation owns a fresh, disposable Compose project."""
-
 import hashlib
 import os
 import re
@@ -32,7 +30,6 @@ def test_compose_foundation(tmp_path):
     project = "jordy-test-" + uuid4().hex
     env_file = tmp_path / "empty.env"
     env_file.touch()
-    # Keep the two ports reserved until both have been assigned.
     with socket.socket() as panel, socket.socket() as db:
         panel.bind(("127.0.0.1", 0))
         db.bind(("127.0.0.1", 0))
@@ -85,7 +82,6 @@ def test_compose_foundation(tmp_path):
                 "SELECT has_table_privilege('alembic_version','UPDATE')"
             ).fetchone()[0]
 
-        # Check the baked image without any of the Compose runtime variables or volumes.
         subprocess.run(
             [
                 "docker",
@@ -129,6 +125,5 @@ def test_compose_foundation(tmp_path):
                 == original
             )
     finally:
-        # The project name and credentials above are generated here, never supplied by the caller.
         compose("down", "--volumes")
         subprocess.run(["docker", "image", "rm", f"{project}-app:local"], check=True, env=env)

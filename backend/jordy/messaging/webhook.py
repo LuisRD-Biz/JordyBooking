@@ -1,5 +1,3 @@
-"""Public ASGI entrypoint. Deliberately never imports the administrative application."""
-
 import hashlib
 import hmac
 import json
@@ -33,14 +31,12 @@ def string(value, limit=200):
 
 def timestamp(value):
     stamp = datetime.fromtimestamp(int(value), UTC)
-    # Future events must not extend the service window.
     if stamp.year < 2000 or stamp.timestamp() > datetime.now(UTC).timestamp() + 300:
         raise ValueError("invalid_timestamp")
     return stamp.isoformat()
 
 
 def normalize(payload, config):
-    """Allowlisted data only. Never retain envelopes, media URLs or provider error prose."""
     if payload["object"] != "whatsapp_business_account":
         raise ValueError("wrong_object")
     if not isinstance(payload["entry"], list) or not payload["entry"]:
@@ -196,6 +192,5 @@ async def receive(request: Request):
     try:
         await run_in_threadpool(persist, events)
     except Exception:
-        # Deliberately omit exception/SQL parameters from public logging and response.
         raise HTTPException(503, "durable_storage_unavailable") from None
     return {"accepted": True}

@@ -15,13 +15,8 @@ const STAGES: {id: Stage; label: string}[] = [
   {id: 'signed', label: 'Firmado'},
   {id: 'linked', label: 'Vinculado'},
 ];
-const FILTER_FROM = 10; // The search box only earns its place on long lists.
+const FILTER_FROM = 10;
 
-/**
- * One visible state for the contract (no contract → file uploaded → signed → linked) with a
- * single button for the next step, and the booking's private documents underneath.
- * Uploading a PDF never counts as signing: the signature is always registered explicitly.
- */
 export function ContractTab({booking, contract}: {booking: Row; contract: Row | null}) {
   const {zone, changed, open} = useStudio();
   const [documents, setDocuments] = useState<Row[]>([]), [total, setTotal] = useState(0), [query, setQuery] = useState('');
@@ -43,7 +38,6 @@ export function ContractTab({booking, contract}: {booking: Row; contract: Row | 
   const linked = contract?.document_id ? documents.find(d => d.id === contract.document_id) : undefined;
   const stage: Stage = contract ? (contract.document_id ? 'linked' : 'signed') : contractFiles.length ? 'uploaded' : 'none';
   const isEvent = booking.kind === 'event', pending = booking.status === 'pending_approval';
-  // The signature is registered on events that are still waiting for approval.
   const canSign = isEvent && pending && !contract;
   const refresh = (message?: string) => { setVersion(value => value + 1); changed(message); };
 
@@ -54,7 +48,6 @@ export function ContractTab({booking, contract}: {booking: Row; contract: Row | 
     setError(''); setProgress(0);
     try {
       const document = await uploadDocument(booking.id, file, {type: 'contract'}, setProgress);
-      // With the signature already on record, the file is what was missing: link it right away.
       if (contract) await api(`/api/bookings/${booking.id}/contract/document`, 'POST', {document_id: document.id});
       refresh(contract ? 'Archivo vinculado al contrato' : 'Contrato subido');
     } catch (err) {
@@ -151,7 +144,6 @@ export function ContractTab({booking, contract}: {booking: Row; contract: Row | 
   </div>;
 }
 
-/** Attach any other file (deposit receipt, annex…) or a new version of an existing one. */
 function AddDocument({bookingId, limit, current, onClose, onSaved}: {bookingId: number; limit: number; current: Row[]; onClose: () => void; onSaved: () => void}) {
   const [file, setFile] = useState<File | null>(null), [progress, setProgress] = useState<number | null>(null);
   return <Editor title="Agregar documento" subtitle={`PDF, JPG o PNG${limit ? ` · máximo ${Math.round(limit / 1048576)} MB` : ''}. Adjuntar un archivo no registra su firma.`} saveLabel={progress === null ? 'Guardar documento' : `Subiendo ${progress}%`} onClose={onClose}

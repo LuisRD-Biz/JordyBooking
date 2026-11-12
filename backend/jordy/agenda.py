@@ -1,10 +1,3 @@
-"""Unified read-only agenda: bookings, appointments and blocks as one normalized list.
-
-One call feeds a whole calendar month in the panel. The same shape is meant to be the
-read "tool" of any future operator of the studio (for example an assistant reached through
-Telegram), so it carries no presentation logic: plain types, UTC instants and stable ids.
-"""
-
 from datetime import date, datetime
 from typing import Annotated, Literal
 
@@ -19,7 +12,7 @@ from jordy.db import get_session
 from jordy.domain import RuleViolation, day_bounds
 from jordy.models import Appointment, Booking, Customer, Occupancy, Resource
 
-MAX_DAYS = 62  # Two full months: the visible month plus the weeks around it.
+MAX_DAYS = 62
 APPOINTMENT_LABELS = {"contract": "Firma de contrato", "meeting": "Reunión"}
 
 router = APIRouter(prefix="/api", dependencies=ADMIN)
@@ -36,14 +29,12 @@ class AgendaItem(BaseModel):
     status: str
     kind: str
     customer_id: int | None
-    # Context for a detail view; null where it does not apply.
     booking_id: int | None = None
     resource_id: int | None = None
     location: str | None = None
 
 
 def window(start: date, end: date) -> tuple[datetime, datetime]:
-    """Studio-local calendar days, both inclusive, as a half-open range of instants."""
     if not (1900 <= start.year and end.year <= 9998):
         raise RuleViolation("Fecha fuera del rango admitido.")
     if end < start:
@@ -57,8 +48,6 @@ def window(start: date, end: date) -> tuple[datetime, datetime]:
 def collect(
     session: Session, lower: datetime, upper: datetime, include_cancelled: bool = False
 ) -> list[AgendaItem]:
-    """Everything that overlaps [lower, upper), ordered by start."""
-
     def overlapping(model):
         return model.starts_at < upper, model.ends_at > lower
 

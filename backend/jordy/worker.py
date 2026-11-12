@@ -1,5 +1,3 @@
-"""Single-batch simulated outbox processor. Real integrations are intentionally disabled."""
-
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -23,7 +21,6 @@ def process_batch(session: Session, provider: CalendarProvider, limit: int = 50)
         try:
             provider.apply_booking_change(row.payload, row.event_key)
         except Exception:
-            # Never persist provider exception strings: they can contain credentials/PII.
             row.last_error = "provider_error"
             row.available_at = now() + timedelta(seconds=min(3600, 2**row.attempts))
             if row.attempts >= 5:

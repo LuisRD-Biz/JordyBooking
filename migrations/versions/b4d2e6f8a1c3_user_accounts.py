@@ -1,5 +1,3 @@
-"""Add individual user accounts, server-side sessions and login attempts."""
-
 import sqlalchemy as sa
 from alembic import op
 

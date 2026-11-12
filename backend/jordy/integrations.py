@@ -1,5 +1,3 @@
-"""Contracts for external integrations; no real credentials or network calls yet."""
-
 from typing import Protocol
 
 

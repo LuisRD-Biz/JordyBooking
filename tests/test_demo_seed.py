@@ -1,5 +1,3 @@
-"""The lab seed must roll back as a unit and remain safe to repeat."""
-
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from runpy import run_path

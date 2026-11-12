@@ -1,5 +1,3 @@
-"""Conservative Spanish rules. A detection is never a booking instruction."""
-
 import re
 import unicodedata
 from datetime import date, timedelta
@@ -39,7 +37,6 @@ def detect(body, occurred_at, timezone):
         return []
     result = []
     base = occurred_at.astimezone(ZoneInfo(timezone)).date()
-    # Sentence-level evidence keeps a negation attached to the relevant assertion.
     for index, original in enumerate(re.split(r"(?<=[.!?])\s+|\n+", body)):
         text = normalize(original)
         if not text.strip():
@@ -69,14 +66,12 @@ def detect(body, occurred_at, timezone):
 
         for kind, pattern in PATTERNS.items():
             if re.search(pattern, text):
-                # Even an explicit verbal agreement remains only a possible agreement.
                 add(
                     kind,
                     level="possible"
                     if kind in {"agreement", "cancellation", "appointment", "reschedule"}
                     else certainty,
                 )
-        # No year inference for "15 de mayo"; preserve evidence for human review.
         pattern = r"\b(\d{1,2}) de (" + "|".join(MONTHS) + r")(?: (?:de |del )?(\d{4}))?\b"
         dates = list(re.finditer(pattern, text))
         dates += list(re.finditer(r"\b(\d{4})-(\d{2})-(\d{2})\b", text))
@@ -88,19 +83,16 @@ def detect(body, occurred_at, timezone):
                     mentioned = date(int(item[3]), MONTHS.index(item[2]) + 1, int(item[1]))
                 elif re.fullmatch(r"\d{4}-\d{2}-\d{2}", item[0]):
                     mentioned = date.fromisoformat(item[0])
-                # Numeric DD/MM remains ambiguous across locale conventions.
             except ValueError:
                 pass
             add("date", str(item.start()), mentioned, "explicit" if mentioned else "ambiguous")
         relative = re.search(r"\b(pasado manana|manana|hoy)\b", text)
         if relative:
-            # "por la mañana" denotes a time of day, not tomorrow.
             time_only = relative[0] == "manana" and re.search(r"\b(?:la|por la) manana\b", text)
             if not time_only:
                 offset = {"hoy": 0, "manana": 1, "pasado manana": 2}[relative[0]]
                 value = base + timedelta(days=offset)
                 add("date", "relative", value, certainty)
         if re.search(r"\b(?:proximo |este |el )?(" + "|".join(WEEKDAYS) + r")\b", text):
-            # "Próximo sábado" can mean the nearest or following week: never guess.
             add("date", "weekday", level="ambiguous")
     return result

@@ -37,15 +37,10 @@ def now():
     return datetime.now(UTC)
 
 
-SYSTEM_ACTOR = "jordy-admin"  # Historical default: workers, scripts and admin-key access.
+SYSTEM_ACTOR = "jordy-admin"
 
 
 def actor(session: Session) -> str:
-    """Who is acting in this unit of work: an account's e-mail, "local" or the system.
-
-    The API binds it to the session from the authenticated principal (`api.bind_actor`), so
-    every existing `audit(...)` call records the real user without changing its signature.
-    """
     return (session.info.get("actor") or SYSTEM_ACTOR)[:100]
 
 
@@ -115,7 +110,6 @@ def preview_allocation(session: Session, package_id: int, start: datetime):
 
 
 def create_booking(session: Session, data: BookingInput, key: str):
-    # Transaction-scoped advisory lock serializes retries with the same key.
     from sqlalchemy import text
 
     session.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"), {"key": key})
@@ -267,8 +261,6 @@ def reschedule(session: Session, identity: int, start: datetime, location: str |
         raise Conflict("Un evento con contrato requiere revisar el contrato antes de reprogramar.")
     if start <= now():
         raise RuleViolation("La nueva fecha debe ser futura.")
-    # Reuse occupancy rows only after locking resources. Any failure rolls the whole
-    # transaction back, preserving the original schedule and assignments.
     available_resources(session, booking.starts_at, booking.ends_at, lock=True)
     existing = session.scalars(select(Occupancy).where(Occupancy.booking_id == identity)).all()
     for row in existing:
@@ -276,12 +268,11 @@ def reschedule(session: Session, identity: int, start: datetime, location: str |
     session.flush()
     booking.starts_at = start
     booking.ends_at = start + timedelta(minutes=booking.snapshot["duration_minutes"])
-    if location is not None:  # Omitted: keep the place already agreed.
+    if location is not None:
         booking.location = location
     if booking.status == "confirmed":
         occupy(session, booking)
     audit(session, "booking.rescheduled", identity)
-    # Each successful reschedule gets a distinct durable event identifier.
     session.flush()
     from uuid import uuid4
 

@@ -1,5 +1,3 @@
-"""PostgreSQL filtering and stable pagination in studio-local calendar days."""
-
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
@@ -281,7 +279,6 @@ def contact_matches(
 ):
     if not phone and not email:
         return []
-    # Partial input is expected while typing. Match exact normalized identifiers only.
     data = CustomerInput.model_construct(phone=phone, email=email)
     identities = possible_duplicates(session, data)
     return [

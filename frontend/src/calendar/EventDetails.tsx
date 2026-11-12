@@ -13,7 +13,6 @@ function range(item: AgendaItem, zone: string) {
     : `${fmt(item.starts_at, zone, 'd MMM, HH:mm')} – ${fmt(item.ends_at, zone, 'd MMM, HH:mm')}`;
 }
 
-/** Run one action on the item, then close and refresh; errors stay inside the sheet. */
 function useAction(onClose: () => void) {
   const {changed} = useStudio();
   const [busy, setBusy] = useState(false), [error, setError] = useState('');

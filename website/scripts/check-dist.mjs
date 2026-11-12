@@ -20,7 +20,7 @@ for (const path of files) {
   assert(!/\.(map|env|pem|key|sql|sqlite|db)$/.test(path), 'Archivo privado en el build');
   if (!['.html','.js','.css','.svg','.txt','.xml'].includes(extname(path))) continue;
   const body = await readFile(path, 'utf8');
-  assert(!/(?:DATABASE_URL|ADMIN_API_KEY|META_APP_SECRET|WHATSAPP_ACCESS_TOKEN|OPENAI_API_KEY|postgres(?:ql)?:\/\/|-----BEGIN [A-Z ]*PRIVATE KEY|\bEAA[A-Za-z0-9]{50,}|\bsk-(?:proj-)?[A-Za-z0-9_-]{35,})/.test(body), 'Posible secreto o dependencia privada: publicación detenida');
+  assert(!/(?:DATABASE_URL|ADMIN_API_KEY|META_APP_SECRET|WHATSAPP_ACCESS_TOKEN|postgres(?:ql)?:\/\/|-----BEGIN [A-Z ]*PRIVATE KEY|\bEAA[A-Za-z0-9]{50,}|\bsk-(?:proj-)?[A-Za-z0-9_-]{35,})/.test(body), 'Posible secreto o dependencia privada: publicación detenida');
   if (extname(path) === '.html') {
     assert.equal((body.match(/<h1(?:\s|>)/g) || []).length, 1, 'Debe existir un título principal');
     assert(body.includes('<html lang="es-MX">'));

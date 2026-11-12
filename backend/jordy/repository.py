@@ -22,8 +22,6 @@ def require(session: Session, model, identity, *, lock=False):
 
 
 def available_resources(session: Session, start: datetime, end: datetime, *, lock=False):
-    # A deliberately conservative lock for a small studio. Every writer locks resources
-    # in the same order. The exclusion constraint is the final database safeguard.
     statement = select(Resource).order_by(Resource.id)
     if lock:
         statement = statement.with_for_update()

@@ -4,7 +4,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
 try {
-    if (-not (Test-Path -LiteralPath $python)) { throw 'Falta instalar el entorno de Python. Consulta docs/panel.md.' }
+    if (-not (Test-Path -LiteralPath $python)) { throw 'Falta instalar el entorno de Python. Ejecuta uv sync --locked.' }
     $launchArgs = @((Join-Path $PSScriptRoot 'launch_panel.py'))
     if ($NoBrowser) { $launchArgs += '--no-browser' }
     & $python @launchArgs

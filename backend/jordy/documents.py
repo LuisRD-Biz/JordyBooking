@@ -1,5 +1,3 @@
-"""Private original files, validated by parsers and versioned independently of signing."""
-
 import hashlib
 import os
 import warnings
@@ -180,7 +178,6 @@ async def upload(
             require(session, Customer, booking.customer_id).last_activity_at = now()
             audit(session, "document.uploaded", identity)
             session.flush()
-            # Atomic rename within the same private directory; only our UUID files are touched.
             temporary.rename(final)
             result = metadata(doc)
         committed = True

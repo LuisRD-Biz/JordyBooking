@@ -58,7 +58,6 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
   const [seasonAlways, setSeasonAlwaysState] = useState(() => localStorage.getItem(SEASON_KEY) === '1');
   const loadedAt = useRef(0), loadedOnce = useRef(false);
 
-  // The booking sheet opens over whatever page was showing.
   const baseRef = useRef<Route>({name: HOME, path: HOME});
   if (route.name !== 'reserva') baseRef.current = route;
   const base = baseRef.current;
@@ -73,11 +72,9 @@ function StudioApp({user, onLogout}: {user: Row; onLogout: () => void}) {
       setError('');
       loadedAt.current = Date.now();
     } catch (err) {
-      // Whatever was already loaded stays on screen.
       setError(`No se pudo actualizar la información del estudio: ${(err as Error).message}`);
     } finally {
       setToday(dayKey(new Date(), zone));
-      // The first load fills an empty screen; only later reloads invalidate what pages fetched.
       if (loadedOnce.current) setRevision(value => value + 1);
       loadedOnce.current = true;
       setLoading(false);

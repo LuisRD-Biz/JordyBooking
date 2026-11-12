@@ -1,5 +1,3 @@
-"""Booking notes, the booking summary, place edits and the real actor in the audit trail."""
-
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -49,7 +47,6 @@ def make_booking(client, start=START):
 
 
 def sign_in(client, database, monkeypatch, role="admin", name="Ana Synthetic"):
-    """Switch the client from the admin key to a cookie session of a new account."""
     client.headers.pop("X-Admin-Key", None)
     monkeypatch.setattr(settings(), "client_ip_header", "X-Test-Client-IP")
     client.headers["X-Test-Client-IP"] = f"198.51.100.{uuid4().int % 250 + 1}"
@@ -93,7 +90,6 @@ def test_create_and_list_notes_signed_by_the_account(client, database, monkeypat
     listed = client.get(path).json()
     assert [n["body"] for n in listed] == ["Prefiere fotos al atardecer.", "Confirmó el anticipo."]
     assert [n["author_name"] for n in listed] == [LOCAL_AUTHOR, "Ana Synthetic"]
-    # Append-only: there is no way to edit or delete a note through the API.
     for method in ("put", "patch", "delete"):
         assert getattr(client, method)(f"{path}/{note['id']}").status_code in {404, 405}
 
@@ -118,7 +114,7 @@ def test_retry_with_the_same_key_writes_one_note(client):
     assert (first.status_code, again.status_code) == (201, 200)
     assert first.json()["id"] == again.json()["id"]
     stamps = [datetime.fromisoformat(r.json()["created_at"]) for r in (first, again)]
-    assert stamps[0] == stamps[1]  # same instant, whatever offset it is rendered in
+    assert stamps[0] == stamps[1]
     assert len(client.get(path).json()) == 1
     assert client.post(path, json={"body": "Otro texto."}, headers=key).status_code == 409
     wrong_booking = client.post(
@@ -146,7 +142,7 @@ def test_notes_require_session_admin_role_and_same_origin(client, database, monk
     for origin in ("", "https://evil.invalid"):
         refused = client.post(path, json={"body": "otro origen"}, headers={"Origin": origin})
         assert refused.status_code == 403
-    assert client.get(path, headers={"Origin": ""}).status_code == 200  # reads are not CSRF-prone
+    assert client.get(path, headers={"Origin": ""}).status_code == 200
     assert client.get(path).json() == []
     assert client.post(path, json={"body": "mismo origen"}).status_code == 201
 
@@ -170,11 +166,9 @@ def test_place_can_change_without_rescheduling(client, database, monkeypatch):
     assert datetime.fromisoformat(changed.json()["starts_at"]) == START
     audit = last_audit(database, "booking.location_changed", booking)
     assert audit.actor == email
-    # Repeating the same value changes nothing and is not logged again.
     assert client.post(path, json={"location": "Jardín Botánico"}).status_code == 200
     assert last_audit(database, "booking.location_changed", booking).id == audit.id
 
-    # Rescheduling without a place keeps the one already agreed.
     moved = client.post(
         f"/api/bookings/{booking}/reschedule",
         json={"starts_at": (START + timedelta(days=1)).isoformat()},

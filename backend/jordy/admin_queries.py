@@ -1,5 +1,3 @@
-"""PostgreSQL projections for the administrative read cases. No HTTP dependencies."""
-
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
@@ -11,12 +9,11 @@ from sqlalchemy.orm import Session
 from jordy.messaging.queries import needs_reply
 from jordy.models import Booking, Conversation
 
-# Fetch one extra row to disclose truncation without an unbounded count or result.
 RESULT_LIMIT = 15
 
 
 class AdminReadUnavailable(Exception):
-    """The current request failed. Callers can retry with a fresh session."""
+    pass
 
 
 def build_read_engine(url: str) -> Engine:
@@ -35,12 +32,10 @@ def build_read_engine(url: str) -> Engine:
 def read_session(engine: Engine) -> Iterator[Session]:
     try:
         with Session(engine, autoflush=False) as session:
-            # One snapshot for all projections, including the allocator's multiple SELECTs.
             session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"))
             session.execute(text("SET LOCAL statement_timeout = '5s'"))
             yield session
     except SQLAlchemyError:
-        # Details from the driver may include the server address, SQL or contact data.
         raise AdminReadUnavailable("No se pudo consultar la base de datos.") from None
 
 

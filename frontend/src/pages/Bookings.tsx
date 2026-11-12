@@ -15,7 +15,6 @@ const QUICK: {value: Quick; label: string}[] = [
   {value: 'contract', label: 'Con contrato'},
 ];
 
-/** Find any booking: a search box, quick chips and the rarely used filters in a sheet. */
 export function Bookings({initial = 'all'}: {initial?: Quick}) {
   const {zone, today, revision, openBooking} = useStudio();
   const [quick, setQuick] = useState<Quick>(initial), [text, setText] = useState(''), [page, setPage] = useState(1);
@@ -24,7 +23,6 @@ export function Bookings({initial = 'all'}: {initial?: Quick}) {
     all: {}, pending: {status: 'pending_approval'}, confirmed: {status: 'confirmed', upcoming: true},
     month: {month: Number(today.slice(5, 7)), year: Number(today.slice(0, 4))}, contract: {has_contract: true},
   };
-  // "Este mes" is itself a date filter, so it replaces the range chosen in the sheet.
   const {date_from, date_to, ...rest} = advanced;
   const params = {...rest, ...(quick === 'month' ? {} : {date_from, date_to}), ...quickParams[quick], q: text, page};
   const {result, error, busy, loaded, retry} = usePage('/api/search/bookings', params, revision);

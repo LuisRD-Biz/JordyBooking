@@ -1,5 +1,3 @@
-"""Real PostgreSQL, signed fixtures and a mocked Graph transport. Never contacts Meta."""
-
 import hashlib
 import hmac
 import json
@@ -500,7 +498,6 @@ def test_worker_claim_before_network_and_late_receipts(wa, database, client):
             return SendResult("accepted", external)
 
     provider = Provider()
-    # Jobs from other tests must be rejected for this account, never sent.
     for _ in range(100):
         if not send_one(database, wa, provider):
             break

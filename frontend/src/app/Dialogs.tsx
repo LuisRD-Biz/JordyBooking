@@ -11,7 +11,6 @@ import type {Row} from '../shared';
 import {useStudio} from './context';
 import type {Dialog} from './context';
 
-/** The "+" selector: what to create, and for which day. */
 function CreateMenu({initialDay, onClose}: {initialDay: string; onClose: () => void}) {
   const {zone, today, open} = useStudio();
   const [day, setDay] = useState(initialDay);
@@ -49,7 +48,6 @@ function Availability({day, onClose}: {day: string; onClose: () => void}) {
   </Editor>;
 }
 
-/** Date, time and place in one form; only what changed is sent. */
 function EditBooking({booking, onClose}: {booking: Row; onClose: () => void}) {
   const {zone, changed} = useStudio();
   const locked = booking.kind === 'event' && !!booking.contract;
@@ -73,12 +71,10 @@ function EditBooking({booking, onClose}: {booking: Row; onClose: () => void}) {
   </Editor>;
 }
 
-/** Every dialog that can be opened from more than one screen. */
 export function Dialogs({dialog, close}: {dialog: Dialog | null; close: () => void}) {
   const {zone, today, selectedDay, resources, changed} = useStudio();
   if (!dialog) return null;
   const row = dialog.row;
-  // New records start from the selected day; a day already gone falls back to today.
   const day: string = row?.day || (selectedDay < today ? today : selectedDay);
   const save = async (path: string, method = 'POST', body?: Row) => {
     await api(path, method, body);

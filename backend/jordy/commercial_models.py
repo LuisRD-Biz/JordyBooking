@@ -1,5 +1,3 @@
-"""Commercial observations never allocate operational resources."""
-
 from datetime import date, datetime, time
 
 from sqlalchemy import Date, DateTime, ForeignKey, String, Time, UniqueConstraint

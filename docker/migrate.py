@@ -1,5 +1,3 @@
-"""Explicit administration of the Compose database. Default action only reports its revision."""
-
 import argparse
 import os
 
@@ -16,7 +14,6 @@ def upgrade(config):
             "Configura una contraseña de aplicación independiente de al menos 32 caracteres."
         )
 
-    # PGHOST, PGDATABASE, PGUSER and PGPASSWORD belong only to the Compose migration job.
     with psycopg.connect(autocommit=True) as owner:
         if not owner.execute("SELECT pg_try_advisory_lock(90421281)").fetchone()[0]:
             raise SystemExit("Ya se está preparando esta base. Espera a que termine.")
@@ -29,7 +26,6 @@ def upgrade(config):
         if role and role[0]:
             raise SystemExit("El rol jordy_app existente excede los permisos esperados.")
         if role is None:
-            # Send a SCRAM verifier to the server, instead of a cleartext password in DDL.
             verifier = owner.pgconn.encrypt_password(
                 password.encode(), b"jordy_app", b"scram-sha-256"
             )
@@ -38,7 +34,6 @@ def upgrade(config):
                     sql.Literal(verifier.decode())
                 )
             )
-        # Validate an existing login before changing the schema. Never rotate it implicitly.
         with psycopg.connect(user="jordy_app", password=password):
             pass
 

@@ -7,7 +7,7 @@ for (let attempt = 0; attempt < 40; attempt++) {
   try {
     const response = await fetch(origin, {signal: AbortSignal.timeout(1000)});
     if (response.ok) {ready = true; break;}
-  } catch { /* Worker still starting. */ }
+  } catch {}
   await setTimeout(500);
 }
 assert(ready, 'Workers preview did not become ready');

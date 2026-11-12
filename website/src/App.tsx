@@ -18,7 +18,6 @@ function Header({home}: {home: boolean}) {
   </div></header>;
 }
 
-/** Always on screen: the two things a visitor comes for. */
 function Dock({home}: {home: boolean}) {
   return <div className="dock">
     <a className="btn ghost" href={`${home ? '' : '/'}#paquetes`}>Ver paquetes</a>

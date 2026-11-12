@@ -73,7 +73,7 @@ def test_poll_handles_unauthorized_retry_and_cursor():
             (429, {"ok": False, "parameters": {"retry_after": 9}}),
             (200, {"ok": True, "result": batch}),
             (200, {"ok": True, "result": {}}),
-            (409, {"ok": False}),  # Another poller/webhook: stop.
+            (409, {"ok": False}),
         ]
     )
 

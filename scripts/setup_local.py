@@ -1,5 +1,3 @@
-"""Prepare a dedicated local panel database without changing existing databases."""
-
 import os
 import secrets
 import subprocess

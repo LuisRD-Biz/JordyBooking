@@ -1,0 +1,18 @@
+:root {
+  --sitio-papel: #f8f5f0;
+  --sitio-papel-2: #f0ebe3;
+  --sitio-tinta: #2b1d15;
+  --sitio-cafe: #7b4a2d;
+
+  --panel-espresso: #3b2418;
+  --panel-canela: #8b4a2b;
+  --panel-calabaza: #d9772b;
+  --panel-nuez: #c8893f;
+  --panel-latte: #e3c9a8;
+  --panel-crema: #f6ebdd;
+  --panel-salvia: #4f6b3a;
+  --panel-arandano: #a8323a;
+
+  --fuente-titulos: 'Cormorant Garamond', Georgia, serif;
+  --fuente-texto: 'Manrope', system-ui, Arial, sans-serif;
+}

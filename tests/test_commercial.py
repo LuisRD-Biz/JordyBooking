@@ -65,7 +65,7 @@ def test_conservative_dates(body, expected):
 
 
 def test_local_day_and_false_positives():
-    stamp = datetime(2026, 10, 21, 2, tzinfo=UTC)  # Still October 20 in the studio.
+    stamp = datetime(2026, 10, 21, 2, tzinfo=UTC)
     assert detect("mañana", stamp, ZONE)[0]["mentioned_date"] == date(2026, 10, 21)
     assert not detect("quince fotos por la mañana", stamp, ZONE)
     assert not detect(None, stamp, ZONE)

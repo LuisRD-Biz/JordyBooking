@@ -1,5 +1,3 @@
-"""Administrative use cases. Consumers receive limited records with no customer details."""
-
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
@@ -16,7 +14,7 @@ from jordy.services import now, preview_allocation
 
 
 class AdminInputError(ValueError):
-    """A validation message suitable for display to an authorized operator."""
+    pass
 
 
 @dataclass(frozen=True)
@@ -31,7 +29,7 @@ class BookingItem:
 @dataclass(frozen=True)
 class Agenda:
     start_day: date
-    end_day: date  # Inclusive, local to the studio
+    end_day: date
     bookings: tuple[BookingItem, ...]
     more: bool
 
@@ -54,7 +52,6 @@ class FollowUp:
 @dataclass(frozen=True)
 class Pending:
     bookings: tuple[BookingItem, ...]
-    # None when messaging is disabled: there is no inbox to follow up.
     conversations: tuple[FollowUp, ...] | None
     more_bookings: bool
     more_conversations: bool
@@ -65,7 +62,6 @@ def _date(value: str) -> date:
         parsed = date.fromisoformat(value)
     except ValueError:
         parsed = None
-    # Leave room for interval arithmetic and timezone conversion at year boundaries.
     if not parsed or not 1 < parsed.year < 9999 or parsed.isoformat() != value:
         raise AdminInputError("Indica una fecha válida en formato AAAA-MM-DD.")
     return parsed
@@ -136,7 +132,6 @@ class AdminReads:
         start = _local_start(day, at, self.zone)
         with queries.read_session(self._engine) as session:
             try:
-                # Pass an instant so preparation and duration are elapsed minutes across DST.
                 allocation = preview_allocation(session, package_id, start.astimezone(UTC))
             except NotFound:
                 raise AdminInputError("No se encontró el paquete indicado.") from None

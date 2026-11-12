@@ -1,5 +1,3 @@
-"""Add append-only notes on bookings, signed by the account that wrote them."""
-
 import sqlalchemy as sa
 from alembic import op
 

@@ -1,5 +1,3 @@
-"""Contact capture, duplicate warnings and verifiable commercial classification."""
-
 import re
 
 from sqlalchemy import and_, func, or_, select, text

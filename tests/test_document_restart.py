@@ -1,5 +1,3 @@
-"""Verify persisted bytes across actual server processes, in the isolated test schema."""
-
 import os
 import socket
 import subprocess

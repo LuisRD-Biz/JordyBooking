@@ -1,6 +1,5 @@
-// Populate only with links confirmed by Jordy. Empty channels do not render.
 export const contact = {
-  whatsapp: 'https://wa.me/524499209781', // https://wa.me/ + confirmed international commercial number
+  whatsapp: 'https://wa.me/524499209781',
   instagram: 'https://www.instagram.com/jordy_fotografia/',
   facebook: 'https://www.facebook.com/Jordyfloresss/',
   email: '',

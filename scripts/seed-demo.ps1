@@ -1,4 +1,3 @@
-# Loads fixtures only in the running lab API, using its restricted database role.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $docker = (Get-Command docker -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source

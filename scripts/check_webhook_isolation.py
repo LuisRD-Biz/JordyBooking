@@ -1,5 +1,3 @@
-"""Read-only local preflight. Does not send messages or open any tunnel."""
-
 import sys
 
 import httpx

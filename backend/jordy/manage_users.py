@@ -1,13 +1,3 @@
-"""Administer panel accounts from the server shell. Passwords are typed, never passed as arguments.
-
-python -m jordy.manage_users create --email ana@example.com --name "Ana" [--role admin]
-python -m jordy.manage_users reset-password --email ana@example.com
-python -m jordy.manage_users disable --email ana@example.com
-python -m jordy.manage_users enable --email ana@example.com
-python -m jordy.manage_users unlock --email ana@example.com
-python -m jordy.manage_users list
-"""
-
 import argparse
 import getpass
 import sys

@@ -1,5 +1,3 @@
-"""Stored observations and reports; deliberately no messaging/booking dispatch."""
-
 from collections import Counter
 from datetime import date, time, timedelta
 from typing import Annotated, Literal
@@ -36,7 +34,6 @@ DB = Annotated[Session, Depends(get_session)]
 
 def analyze(session, conversation_id):
     require(session, Conversation, conversation_id)
-    # Append-only message detections. Unique keys also protect concurrent manual/nightly runs.
     for message in session.scalars(
         select(Message)
         .where(
@@ -321,7 +318,6 @@ def generate_summary(session, day):
         "jordy_confirmed": [
             serialize(o)
             for o in operations
-            # Only people confirm or reschedule; the actor is now the account that did it.
             if o.action in {"booking.confirmed", "booking.rescheduled"}
         ],
         "manual_notes": [serialize(n) for n in notes],
@@ -389,7 +385,6 @@ def set_schedule(data: ScheduleInput, session: DB):
 
 
 def recover_summaries(engine, current=None):
-    """Called at startup and each minute. One missed day per tick, no sending."""
     current = (current or now()).astimezone(ZoneInfo(settings().studio_timezone))
     with Session(engine) as session, session.begin():
         row = session.scalar(
@@ -397,7 +392,6 @@ def recover_summaries(engine, current=None):
         )
         if not row or row.local_time is None:
             return
-        # Selected local time generates the previous completed calendar day.
         latest = current.date() - timedelta(days=1 if current.time() >= row.local_time else 2)
         next_day = row.last_day + timedelta(days=1) if row.last_day else row.start_day
         day = max(row.start_day, next_day)

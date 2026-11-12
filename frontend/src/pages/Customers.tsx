@@ -41,7 +41,6 @@ export function Customers() {
   </section>;
 }
 
-/** Client file: contact actions, what is coming up and what already happened. */
 function CustomerCard({customer, onClose}: {customer: Row; onClose: () => void}) {
   const {zone, revision, open, openBooking} = useStudio();
   const [bookings, setBookings] = useState<Row[] | null>(null), [error, setError] = useState('');

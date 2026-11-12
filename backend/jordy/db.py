@@ -7,7 +7,6 @@ def build_engine(url: str):
 
 
 def get_session():
-    # Engine is attached at application startup; dependency import avoids a cycle.
     from jordy.main import get_engine
 
     with Session(get_engine()) as session:

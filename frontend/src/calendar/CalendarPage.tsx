@@ -10,7 +10,6 @@ import {DayAgenda} from './DayAgenda';
 
 const VIEW_KEY = 'jordy.calendar.view';
 
-/** What needs attention today; each part leads to its list. */
 function PendingStrip({onToday}: {onToday: () => void}) {
   const {metrics} = useStudio();
   const pending: number = metrics.pending || 0, signatures: number = metrics.signatures_today || 0;
@@ -25,12 +24,10 @@ function PendingStrip({onToday}: {onToday: () => void}) {
   </div>;
 }
 
-/** Home: the calendar, with the selected day's agenda right under it (beside it on desktop). */
 export function CalendarPage({day, onDay}: {day: string; onDay: (day: string) => void}) {
   const {zone, today, revision} = useStudio();
   const [view, setView] = useState<View>(() => (localStorage.getItem(VIEW_KEY) === 'week' ? 'week' : 'month'));
   const [month, setMonth] = useState(day.slice(0, 7));
-  // Selecting a day elsewhere (Hoy, a week swipe, a link) brings its month into view.
   useEffect(() => setMonth(day.slice(0, 7)), [day]);
 
   const months = useMemo(() => (view === 'month' ? [month] : [...new Set(weekOf(day).map(value => value.slice(0, 7)))]), [view, month, day]);

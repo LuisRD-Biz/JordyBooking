@@ -8,7 +8,6 @@ import {qs} from '../ui/lists';
 
 const BLANK = {name: '', phone: '', email: '', notes: '', featured: false};
 
-/** Pick an existing contact or capture a new one, warning about likely duplicates. */
 export function ContactPicker({value, onChange, locked = false, existingOnly = false}: {value: Row; onChange: (value: Row) => void; locked?: boolean; existingOnly?: boolean}) {
   const [mode, setMode] = useState(value.customer_id || existingOnly ? 'existing' : 'new');
   const [query, setQuery] = useState(''), [results, setResults] = useState<Row[]>([]), [error, setError] = useState('');
@@ -58,7 +57,6 @@ export function contactPayload(value: Row) {
   return {new_customer: {...customer, email: customer.email || null}};
 }
 
-/** New booking request. It does not hold resources until it is approved. */
 export function BookingForm({initial = {}, onClose, onSaved}: {initial?: Row; onClose: () => void; onSaved: () => void}) {
   const {packages, zone} = useStudio();
   const [contact, setContact] = useState<Row>(initial.customer_id ? {customer_id: initial.customer_id, customer_name: initial.customer_name} : {new_customer: BLANK});
@@ -83,7 +81,6 @@ export function BookingForm({initial = {}, onClose, onSaved}: {initial?: Row; on
   </Editor>;
 }
 
-/** Meeting or contract signing. A signing is always tied to one of the client's bookings. */
 export function AppointmentForm({booking, day, onClose, onSaved}: {booking?: Row; day: string; onClose: () => void; onSaved: () => void}) {
   const {zone} = useStudio();
   const [contact, setContact] = useState<Row>(booking ? {customer_id: booking.customer_id, customer_name: booking.customer_name} : {});

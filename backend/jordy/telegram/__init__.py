@@ -1,5 +1,3 @@
-"""Private Telegram adapter and original public entry points."""
-
 from jordy.telegram.commands import reply_for
 from jordy.telegram.config import TelegramSettings
 from jordy.telegram.transport import ApiFailure, call, poll

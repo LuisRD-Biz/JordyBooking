@@ -24,7 +24,6 @@ def _migrated_test_database():
         pytest.skip("TEST_DATABASE_URL required for real PostgreSQL integration tests")
     if not (make_url(url).database or "").endswith("_test"):
         raise RuntimeError("Integration database name must end in _test")
-    # A unique schema per suite: never truncate or drop existing application data.
     engine = create_engine(url)
     schema = "test_" + uuid4().hex
     with engine.begin() as connection:
@@ -60,7 +59,6 @@ def database():
 
 @pytest.fixture
 def empty_database():
-    # Unfiltered administrative lists must see only the rows arranged by this test.
     with _migrated_test_database() as engine:
         yield engine
 
@@ -79,7 +77,6 @@ def client(database):
 
 @pytest.fixture
 def messaging_enabled(monkeypatch):
-    """WhatsApp and commercial follow-up are off by default; their suites opt in."""
     monkeypatch.setenv("MESSAGING_ENABLED", "true")
     settings.cache_clear()
     yield

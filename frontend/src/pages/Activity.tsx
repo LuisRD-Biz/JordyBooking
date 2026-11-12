@@ -22,7 +22,6 @@ const ACTIONS: Record<string, string> = {
   'appointment.completed': 'Cita realizada', 'appointment.cancelled': 'Cita cancelada',
 };
 
-/** Who did it: the signed-in account, the desktop's local access, or an automated process. */
 export const actorLabel = (actor?: string) =>
   !actor || actor === 'jordy-admin' ? 'Sistema' : actor === 'local' ? 'Acceso local' : actor;
 
@@ -33,7 +32,6 @@ export function Activity() {
     let active = true;
     Promise.all([api('/api/audit?limit=200'), api('/api/operations?limit=50')])
       .then(([a, o]) => { if (active) { setAudit(a); setOperations(o); setError(''); } })
-      // Keep whatever was already on screen.
       .catch(err => { if (active) setError(`No se pudo actualizar la actividad: ${err.message}`); });
     return () => { active = false; };
   }, [revision]);

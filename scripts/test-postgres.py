@@ -1,5 +1,3 @@
-"""Run pytest against a disposable loopback-only PostgreSQL cluster on Windows."""
-
 import os
 import secrets
 import socket

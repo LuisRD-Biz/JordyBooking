@@ -1,4 +1,4 @@
-import {access, readFile, writeFile, mkdir, rm} from 'node:fs/promises';
+import {access, readFile, writeFile, mkdir} from 'node:fs/promises';
 import {render, publicPhotos, validateManifest, validateContacts} from '../.build/prerender.js';
 
 validateContacts();
@@ -31,6 +31,4 @@ for (const route of routes) {
   await mkdir(new URL('.', out), {recursive: true});
   await writeFile(out, html);
 }
-// This contributor note must never become a public asset.
-await rm(new URL('../dist/media/README.txt', import.meta.url), {force: true});
 console.log('Prerender: inicio, privacidad y 404; ningún servidor requerido.');

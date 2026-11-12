@@ -7,12 +7,10 @@ import type {Row} from '../shared';
 
 const MAX = 4000;
 
-/** Append-only notes of a booking: who wrote each one and when, plus a field to add another. */
 export function Notes({bookingId, onCount}: {bookingId: number; onCount: (count: number) => void}) {
   const {zone} = useStudio();
   const [notes, setNotes] = useState<Row[] | null>(null), [error, setError] = useState('');
   const [draft, setDraft] = useState(''), [busy, setBusy] = useState(false);
-  // One key per draft: a retry after a flaky connection cannot write the note twice.
   const key = useRef(crypto.randomUUID());
   const path = `/api/bookings/${bookingId}/notes`;
 

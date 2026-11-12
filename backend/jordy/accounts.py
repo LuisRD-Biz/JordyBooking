@@ -1,14 +1,3 @@
-"""Individual accounts: Argon2id passwords, revocable server-side sessions and login throttling.
-
-Security notes
-- Passwords are stored only as Argon2id hashes (memory-hard; salted per user).
-- Session cookies carry a 256-bit random token; the database keeps only its SHA-256,
-  so a database leak does not yield usable cookies.
-- Failed logins are recorded per e-mail and per client IP. Throttling applies the same way
-  to existing and unknown e-mails, and unknown e-mails still pay for a hash verification,
-  so responses do not reveal which accounts exist.
-"""
-
 import hashlib
 import secrets
 from dataclasses import dataclass
@@ -42,7 +31,7 @@ ATTEMPT_RETENTION = timedelta(days=90)
 PASSWORD_MIN = 12
 PASSWORD_MAX = 128
 
-hasher = PasswordHasher()  # Argon2id, RFC 9106 profile: t=3, m=64 MiB, p=4
+hasher = PasswordHasher()
 _DUMMY_HASH = hasher.hash(secrets.token_urlsafe(32))
 
 
@@ -102,11 +91,11 @@ class Principal:
 
 
 class LoginRejected(Exception):
-    """Wrong e-mail or password. Deliberately does not say which."""
+    pass
 
 
 class LoginThrottled(Exception):
-    """Too many recent failures for this e-mail or client."""
+    pass
 
 
 class PasswordRejected(ValueError):
@@ -168,11 +157,6 @@ def _failures(session: Session, column, value: str, since: datetime) -> int:
 
 
 def authenticate(session: Session, email: str, password: str, ip: str) -> User:
-    """Verify credentials inside the caller's transaction.
-
-    Success is recorded here. On LoginRejected/LoginThrottled the caller's transaction rolls
-    back, so the caller must record the failed attempt in a new transaction.
-    """
     email = normalize_email(email)
     moment = now()
     since = moment - ATTEMPT_WINDOW
@@ -180,7 +164,6 @@ def authenticate(session: Session, email: str, password: str, ip: str) -> User:
         _failures(session, LoginAttempt.email, email, since) >= MAX_FAILURES_PER_EMAIL
         or _failures(session, LoginAttempt.ip, ip, since) >= MAX_FAILURES_PER_IP
     ):
-        # The caller records throttled attempts too, so a sustained attack keeps the lock active.
         raise LoginThrottled
     user = session.scalar(select(User).where(User.email == email))
     stored = user.password_hash if user is not None else _DUMMY_HASH

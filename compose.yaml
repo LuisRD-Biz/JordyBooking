@@ -10,7 +10,6 @@ services:
       - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
-    # Docker needs a non-internal bridge for the existing loopback host port.
     networks: [db_host, data]
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "jordy", "-d", "jordy"]

@@ -1,4 +1,3 @@
-# Only the files used by the build may leave the checkout.
 **
 !Dockerfile
 !.dockerignore

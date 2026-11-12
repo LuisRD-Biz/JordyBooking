@@ -1,9 +1,7 @@
-# Credenciales y configuración privada
 .env
 .env.*
 !.env.example
 
-# Python
 .venv/
 __pycache__/
 *.py[cod]
@@ -11,7 +9,6 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 
-# Node y compilaciones
 node_modules/
 dist/
 coverage/
@@ -19,15 +16,13 @@ coverage/
 coverage.xml
 .coverage
 
-# Datos locales y archivos generados
 .local/
+documentacion/
 *.log
 *.dump
 *.backup
 
-# Sistema operativo
 .DS_Store
 Thumbs.db
 
-# IDE
 .idea/

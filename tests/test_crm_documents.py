@@ -70,7 +70,6 @@ def test_pdf_metadata_download_persistence_and_no_implicit_signature(client, pri
     assert client.get(f"/api/documents/{doc['id']}/download").content == content
     assert client.get(f"/api/bookings/{booking['id']}/contract").json() is None
     assert approve(client, booking["id"]).status_code == 422
-    # Fresh application client/connection still retrieves the original bytes from disk.
     with TestClient(
         app, headers={"X-Admin-Key": settings().admin_api_key.get_secret_value()}
     ) as fresh:

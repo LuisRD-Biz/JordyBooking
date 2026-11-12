@@ -40,7 +40,6 @@ def process_incoming(session, event):
         .with_for_update()
     )
     if conversation is None:
-        # Match exact normalized phone only. Shared numbers remain unlinked for human review.
         phone = sender if re.fullmatch(r"[0-9]{7,15}", sender) else None
         lock(session, "customer-contact:" + (phone or "wa:" + sender))
         matches = (
@@ -106,8 +105,6 @@ def process_incoming(session, event):
         )
     )
     conversation.last_activity_at = max(conversation.last_activity_at, when)
-    # System/unknown/media notices are stored but do not prove an eligible service window.
-    # Only the text-message flow supported end-to-end opens our conservative local window.
     if event["kind"] == "text":
         effective_time = min(when, now())
         conversation.last_incoming_at = max(
@@ -149,7 +146,6 @@ def reconcile(session, message):
         .order_by(MessageReceipt.occurred_at, MessageReceipt.id)
     ).all()
     for receipt in receipts:
-        # A delivery/read acknowledgement wins over delayed failures or earlier states.
         if receipt.status == "failed" and RANK.get(message.status, 0) < 5:
             message.status, message.error_code = "failed", receipt.error_code
         elif receipt.status in ("sent", "delivered", "read") and (
@@ -215,7 +211,6 @@ def validate_send(config, conversation, kind, details):
 
 def queue_reply(session, config, conversation, data):
     lock(session, "wa:request:" + str(data.request_key))
-    # Preserve hashes for existing request keys; a retry returns the original immutable route.
     content = data.model_dump(
         mode="json", exclude={"request_key", "confirm_send", "expected_recipient"}
     )

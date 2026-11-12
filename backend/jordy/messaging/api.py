@@ -86,7 +86,6 @@ def config_status(session: DB):
         "error_labels": ERRORS,
         "templates": config.whatsapp_approved_templates,
         "jobs": dict(counts),
-        # A current-config failed attempt is a review item, not a live token check.
         "provider_review": (
             {**provider_review, "message_id": latest.id}
             if provider_review

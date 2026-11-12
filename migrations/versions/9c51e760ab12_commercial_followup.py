@@ -1,5 +1,3 @@
-"""Add commercial follow-up; no changes to operational tables."""
-
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB

@@ -8,7 +8,6 @@ export type View = 'month' | 'week';
 const WEEKDAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const NAMES: Record<Tone, string> = {pending: 'por aprobar', confirmed: 'confirmada', appointment: 'cita', block: 'bloqueo', cancelled: 'cancelada'};
 
-/** Days of the week (Monday first) that contains `day`. */
 export const weekOf = (day: string) => Array.from({length: 7}, (_, index) => addDays(day, index - weekday(day)));
 
 function describe(items: AgendaItem[] = []) {
@@ -28,13 +27,8 @@ function DayCell({day, items, today, selected, zone, onSelect, label}: {day: str
   </button>;
 }
 
-/**
- * Month grid or week strip with one dot per kind of event. Swiping sideways (or the arrows)
- * moves one month or one week.
- */
 export function Calendar({view, onView, month, onMonth, selected, onSelect, onToday, today, zone, days, busy}: {
   view: View; onView: (view: View) => void;
-  /** Visible month, YYYY-MM (month view). */
   month: string; onMonth: (month: string) => void;
   selected: string; onSelect: (day: string) => void; onToday: () => void;
   today: string; zone: string; days: Map<string, AgendaItem[]>; busy: boolean;

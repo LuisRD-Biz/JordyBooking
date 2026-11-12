@@ -1,5 +1,3 @@
-"""WhatsApp and the commercial follow-up stay in the codebase but are switched off by default."""
-
 from datetime import UTC, datetime
 
 import pytest
@@ -23,7 +21,6 @@ def test_flag_defaults_to_off(client):
 @pytest.mark.parametrize("path", PATHS)
 def test_disabled_routes_do_not_exist(client, path):
     assert client.get(path).status_code == 404
-    # Indistinguishable from an unknown path, and decided before authentication.
     client.headers.pop("X-Admin-Key")
     assert client.get(path).status_code == 404
     assert client.get("/api/bookings").status_code == 401

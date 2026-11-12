@@ -1,5 +1,3 @@
-"""Telegram commands over a migrated, empty PostgreSQL schema. No network transport."""
-
 import socket
 from datetime import UTC, date, datetime, timedelta
 from unittest.mock import Mock
@@ -18,7 +16,7 @@ from jordy.models import Booking, Customer, Message, Occupancy
 from jordy.schemas import PackageInput, ResourceInput
 
 ZONE = "America/Mexico_City"
-NOW = datetime(2040, 1, 2, 2, tzinfo=UTC)  # Still Jan 1 in the studio.
+NOW = datetime(2040, 1, 2, 2, tzinfo=UTC)
 MIDNIGHT = datetime(2040, 1, 1, tzinfo=ZoneInfo(ZONE))
 
 
@@ -110,7 +108,6 @@ def test_empty_results_and_connection_recovery(empty_database, reads):
 
 
 def test_database_unreachable_hides_connection_details():
-    # Reserve the address without listening. No operational server can own this port.
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -162,7 +159,6 @@ def test_availability_uses_capacity_and_preserves_bookings(reads, catalog, empty
     assert "preliminar" in reply(f"/disponibilidad 2040-01-02 10:00 {package_id}", reads)
     with Session(empty_database) as session, session.begin():
         assert session.get(Booking, identity).status == "pending_approval"
-        # Block starts 29 minutes after the nominal end; the package adds a 30 min buffer.
         session.add(
             Occupancy(
                 resource_id=resource_id,
@@ -201,7 +197,7 @@ def test_postgres_refuses_writes_even_when_no_rows_match(empty_database):
     with read_session(empty_database) as session:
         with pytest.raises(DBAPIError) as exc:
             session.execute(text("UPDATE bookings SET status = status WHERE false"))
-        assert exc.value.orig.sqlstate == "25006"  # read_only_sql_transaction
+        assert exc.value.orig.sqlstate == "25006"
 
 
 def test_pending_matches_inbox_policy(reads, catalog, empty_database):

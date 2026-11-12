@@ -43,7 +43,6 @@ key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
 def authenticate(request: Request, key: Annotated[str | None, Depends(key_header)]):
     principal = current_principal(request)
     if principal is not None:
-        # Administrative API for now; employee and client scopes will get their own routers.
         if principal.role != "admin":
             raise HTTPException(status_code=403, detail="Tu cuenta no tiene acceso a esta sección.")
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
@@ -59,18 +58,12 @@ def authenticate(request: Request, key: Annotated[str | None, Depends(key_header
 
 
 def bind_actor(request: Request, session: Annotated[Session, Depends(get_session)]):
-    """Attach the signed-in account to this request's database session for the audit trail.
-
-    Runs after `authenticate`. FastAPI hands the endpoint the same session object, so
-    `services.audit` can sign every change. Admin-key access keeps the system actor.
-    """
     principal = current_principal(request)
     if principal is not None:
         session.info["actor"] = principal.email or "local"
         session.info["actor_user_id"] = principal.user_id
 
 
-# Every administrative router: authenticate first, then record who is acting.
 ADMIN = [Depends(authenticate), Depends(bind_actor)]
 router = APIRouter(prefix="/api", dependencies=ADMIN)
 DB = Annotated[Session, Depends(get_session)]
@@ -250,7 +243,6 @@ def booking_reschedule(identity: int, data: RescheduleInput, session: DB):
 
 @router.post("/bookings/{identity}/location", response_model=BookingOutput)
 def booking_location(identity: int, data: ApprovalInput, session: DB):
-    """Change the agreed place without touching the schedule. Idempotent."""
     with session.begin():
         result = BookingOutput.model_validate(
             services.change_location(session, identity, data.location)
@@ -260,7 +252,6 @@ def booking_location(identity: int, data: ApprovalInput, session: DB):
 
 @router.get("/bookings/{identity}/summary")
 def booking_summary(identity: int, session: DB):
-    """Everything a detail view needs about one booking, in a single read."""
     from jordy.models import Appointment, BookingDocument
     from jordy.notes import BookingNote
 

@@ -9,7 +9,6 @@ const EMPTY: Page = {items: [], total: 0, page: 1, page_size: 25};
 export const qs = (params: Row) =>
   new URLSearchParams(Object.entries(params).filter(([, value]) => value !== '' && value !== null && value !== undefined).map(([key, value]) => [key, String(value)])).toString();
 
-/** One page of a search endpoint. A failed refresh keeps the rows already on screen. */
 export function usePage(endpoint: string, params: Row, revision = 0) {
   const [result, setResult] = useState<Page>(EMPTY), [error, setError] = useState(''), [busy, setBusy] = useState(true), [attempt, setAttempt] = useState(0);
   const query = qs(params);
@@ -25,7 +24,6 @@ export function usePage(endpoint: string, params: Row, revision = 0) {
   return {result, error, busy, loaded: result !== EMPTY, retry: () => setAttempt(value => value + 1)};
 }
 
-/** Search field that reports the text once the user pauses typing. */
 export function SearchBox({label, placeholder, onSearch}: {label: string; placeholder: string; onSearch: (text: string) => void}) {
   const [text, setText] = useState('');
   useEffect(() => {
@@ -35,14 +33,12 @@ export function SearchBox({label, placeholder, onSearch}: {label: string; placeh
   return <label className="search"><Search size={18} aria-hidden="true"/><input type="search" aria-label={label} placeholder={placeholder} value={text} onChange={event => setText(event.target.value)}/></label>;
 }
 
-/** Single-choice quick filters. */
 export function Chips<T extends string>({label, options, value, onChange}: {label: string; options: {value: T; label: string}[]; value: T; onChange: (value: T) => void}) {
   return <div className="chip-row" role="group" aria-label={label}>
     {options.map(option => <button key={option.value} type="button" aria-pressed={value === option.value} onClick={() => onChange(option.value)}>{option.label}</button>)}
   </div>;
 }
 
-/** A list row that reads as a card on phones and as a table row on wide screens. */
 export function RowCard({title, subtitle, meta, badge, label, onClick}: {title: React.ReactNode; subtitle?: React.ReactNode; meta?: React.ReactNode; badge?: React.ReactNode; label?: string; onClick: () => void}) {
   return <li>
     <button type="button" className="row-card" aria-label={label} onClick={onClick}>

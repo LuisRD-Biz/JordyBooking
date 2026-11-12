@@ -7,7 +7,6 @@ export function SocialIcon({kind}: {kind: string}) {
   </svg>;
 }
 
-/** Mark 1 — a camera with the initials in the lens. Also the site icon (public/favicon.svg). */
 export function CameraMark() {
   return <svg viewBox="0 0 64 64" className="mark-camera" aria-hidden="true">
     <path d="M22 19l4-7h12l4 7z" fill="#3b2418"/>
@@ -19,28 +18,20 @@ export function CameraMark() {
   </svg>;
 }
 
-/** Mark 2 — the photographer: one camera at the eye, the other hanging from a dual harness. */
 export function PhotographerMark() {
   return <svg viewBox="0 0 120 132" className="mark-photographer" aria-hidden="true">
-    {/* hat and head */}
     <ellipse cx="60" cy="15" rx="21" ry="4" fill="#3b2418"/>
     <path d="M47 15c0-9 5-12 13-12s13 3 13 12z" fill="#3b2418"/>
     <circle cx="60" cy="26" r="12" fill="#3b2418"/>
-    {/* torso */}
     <path d="M41 132 36 66c0-12 5-19 13-21l5-2h12l5 2c8 2 13 9 13 21l-5 66z" fill="#3b2418"/>
-    {/* dual harness */}
     <path d="M48 46 45 132M72 46l3 86" stroke="#d9772b" strokeWidth="4.5" fill="none"/>
     <path d="M45 74h30" stroke="#d9772b" strokeWidth="3.5"/>
-    {/* arms raised to the camera */}
     <path d="M40 54 13 86 46 34M80 54l27 32-33-52" stroke="#3b2418" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-    {/* camera at the eye */}
     <path d="M52 20l2-4h8l2 4z" fill="#8b4a2b"/>
     <rect x="42" y="19" width="36" height="20" rx="4" fill="#8b4a2b"/>
     <circle cx="60" cy="29" r="7.5" fill="#3b2418" stroke="#f6ebdd" strokeWidth="2"/>
     <circle cx="57.500" cy="26.500" r="1.800" fill="#f6ebdd"/>
-    {/* initials */}
     <text x="60" y="98" textAnchor="middle" className="mark-initials" fontSize="17" fill="#f6ebdd">JF</text>
-    {/* second camera hanging at the hip */}
     <rect x="64" y="106" width="27" height="18" rx="4" fill="#8b4a2b" stroke="#f6ebdd" strokeWidth="1.5"/>
     <circle cx="77.500" cy="115" r="5.500" fill="#3b2418" stroke="#f6ebdd" strokeWidth="1.5"/>
   </svg>;

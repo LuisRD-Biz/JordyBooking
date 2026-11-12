@@ -1,92 +1,27 @@
-# JordyBooking
+# Jordy Flores Fotografía
 
-[Índice de documentación](docs/README.md) · [Mapa y auditoría de arquitectura](docs/architecture.md) · [Asistente administrativo de Telegram](docs/telegram.md)
+Fotografía y video para bodas, XV años, sesiones y eventos.
 
-## Página pública de Jordy Flores
+Este proyecto reúne todo lo que hace funcionar el estudio:
 
-La web de `jordyflores.com` vive en **`website/`**, independiente del panel.
-React + TypeScript + Vite; publicación estática en el Worker `young-moon-14a9`.
-Desde `website/`: `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm preview`.
-Consulta [despliegue en Cloudflare y edición de contenido](docs/website-deployment.md).
-Web original guardada en `543b1dd`. La rama de publicación prevista es `main`.
-Consulta [contribuciones](CONTRIBUTING.md), [CI/CD](docs/ci-cd.md) y
-[la integración inicial](docs/git-integration.md) al integrar la base.
+- **La página web** [jordyflores.com](https://jordyflores.com), donde puedes ver el portafolio, conocer los servicios y paquetes, y pedir una cotización.
+- **El panel del estudio**, donde Jordy organiza su agenda, revisa la disponibilidad de fechas, confirma reservaciones y lleva el seguimiento de cada cliente.
+- **La atención por mensajes**, para responder a tiempo las consultas que llegan por WhatsApp, y un asistente en Telegram para que Jordy consulte su agenda desde el teléfono.
 
-## Administrador existente
+## ¿Cómo funciona para el cliente?
 
-Panel administrativo React y API de disponibilidad y reservaciones con PostgreSQL real.
-Solicitudes pendientes no bloquean fechas; Jordy confirma sesiones
-con lugar acordado y eventos con contrato firmado registrado.
+1. Visitas la página y eliges el tipo de evento o sesión que te interesa.
+2. Escribes por WhatsApp para consultar disponibilidad y precio.
+3. Jordy confirma la fecha, el lugar y los detalles contigo.
+4. El día del evento, el estudio ya tiene todo listo para ti.
 
-## Desarrollo local
+## Contacto
 
-Para ejecutar **panel, FastAPI y PostgreSQL 18 con Docker Desktop**, sigue la
-[guía de Compose para Windows](docs/docker.md). Incluye la preparación explícita de Alembic,
-volúmenes privados y una prueba de persistencia en un proyecto desechable.
+- WhatsApp: [449 920 9781](https://wa.me/524499209781)
+- Instagram: [@jordy_fotografia](https://www.instagram.com/jordy_fotografia/)
+- Facebook: [Jordy Flores](https://www.facebook.com/Jordyfloresss/)
 
-Para abrir el panel en Windows consulta [la guía del panel](docs/panel.md).
-La instalación local dispone del acceso directo **Jordy Studio**. Incluye CRM,
-cotizaciones versionadas, citas de firma, documentos privados y búsquedas paginadas.
-Consulta [cómo usar estas funciones](docs/crm-documents.md).
+## Créditos
 
-Requisitos: Python 3.12+, uv y PostgreSQL con permiso para instalar `btree_gist`.
-Docker Compose es opcional si ya tienes PostgreSQL.
-
-1. Ejecuta `uv sync --locked`.
-2. Copia `.env.example` a `.env`. Configura `DATABASE_URL`, una contraseña local de BD
-   y una clave `ADMIN_API_KEY` generada con `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
-   La clave y contraseña son diferentes. No publiques `.env`.
-3. Si usas Docker: `docker compose up -d db`.
-4. Aplica `uv run alembic upgrade head`.
-5. Inicia `uv run uvicorn jordy.main:app --app-dir backend --host 127.0.0.1 --port 8000`.
-6. Abre http://127.0.0.1:8000/docs y usa **Authorize** con la clave administrativa.
-
-Flujo para probar en `/docs`: crear cliente → recursos y capacidades → paquete con
-requisitos → consultar disponibilidad → crear solicitud con `Idempotency-Key` →
-registrar contrato si es evento → aprobar indicando lugar → consultar asignaciones.
-Los códigos de capacidad son configurables (por ejemplo `photographer`, `assistant`,
-`second_camera`, `studio_set`). Registra a cada persona una sola vez.
-
-Para Navidad configura sesión de 90 minutos y `buffer_minutes=30`, preparación 0.
-`GET /api/availability/christmas-slots` consulta seis horarios de lunes a viernes
-en octubre/noviembre, con disponibilidad compartida con eventos normales. Configura
-el set como recurso y requisito si solo puede utilizarlo una sesión a la vez.
-
-## Verificación
-
-En Windows con PostgreSQL 18 instalado, la ruta reproducible es
-`uv sync --locked` y después `.\.venv\Scripts\python.exe scripts\test-postgres.py -q`.
-El script crea y retira un clúster temporal en loopback para toda la suite.
-Para usar una instancia de pruebas administrada por separado, sigue este flujo:
-
-```powershell
-uv run ruff check backend scripts tests migrations
-uv run ruff format --check backend scripts tests migrations
-# Base exclusiva de pruebas; el nombre debe terminar en _test.
-$env:TEST_DATABASE_URL = 'postgresql+psycopg://usuario:password@localhost:5432/jordy_test'
-uv run pytest -q
-```
-
-Sin `TEST_DATABASE_URL`, las pruebas de integración se omiten explícitamente.
-La suite crea y elimina solo un schema aleatorio propio. Requiere permisos para
-crear schemas y extensión; no usa datos del estudio. CI levanta PostgreSQL 18.
-
-El worker de prueba se ejecuta en proceso separado. En PowerShell usa
-`$env:PYTHONPATH='backend'; uv run python -m jordy.worker`.
-Procesa un lote y marca `simulated`; no envía mensajes ni conecta calendarios.
-
-## Alcance y siguientes pasos
-
-Este corte incluye un panel React con sesión administrativa local. Las cuentas de usuario
-individuales están pendientes. No exponer esta versión a Internet. Calendario real, apartado
-navideño con vencimiento, recordatorios, portal de clientes e IA aún están pendientes.
-La firma se registra como referencia administrativa, no como firma electrónica.
-
-Documentación: [requisitos](docs/requirements.md), [reglas](docs/business-rules.md),
-[arquitectura](docs/architecture.md), [modelo ER](docs/database.md), [roadmap](docs/roadmap.md).
-
-## WhatsApp — fase 4 local
-
-Bandeja **Mensajes**, receptor aislado y adaptador real preparados. La prueba con Meta
-y cualquier exposición/envío requieren autorización; envíos deshabilitados por defecto.
-[Configuración, inicio, seguridad y prueba acompañada](docs/whatsapp.md).
+Diseñado y desarrollado por LuisRD-Biz para Jordy Flores Fotografía.
+Para programarlo usamos Codex y Claude Code.

@@ -1,5 +1,3 @@
-"""Poll durable jobs. Inbound transactions retry; uncertain outbound jobs NEVER retry."""
-
 import time
 from datetime import timedelta
 
@@ -51,7 +49,6 @@ def receive_one(engine):
                 row.status = "failed"
         else:
             row.status, row.last_error = "processed", None
-            # Keep the dedup key; private body lives only in its message, not twice.
             if row.payload["event"] != "notice":
                 row.payload = {"event": row.payload["event"]}
         return True
@@ -59,7 +56,6 @@ def receive_one(engine):
 
 def send_one(engine, config, provider):
     with Session(engine) as session, session.begin():
-        # Interrupted sends are uncertain, even if a crash occurred before opening the socket.
         stale = session.scalars(
             select(Outbox)
             .where(
@@ -91,7 +87,6 @@ def send_one(engine, config, provider):
         conversation = session.get(Conversation, message.conversation_id)
         try:
             recipient = validate_send(config, conversation, message.kind, message.details)
-            # Legacy queued jobs may only use their unchanged, explicitly authorized identity.
             expected = message.details.get("send_recipient", conversation.external_contact)
             if recipient != expected:
                 raise SendPolicyViolation("send_recipient_changed")
@@ -112,7 +107,6 @@ def send_one(engine, config, provider):
         row_id, message_id = row.id, message.id
         account = message.account_id
         args = (recipient, message.kind, message.body, message.details)
-    # Commit claim before network; no database locks held across an HTTP call.
     try:
         result = provider.send(*args)
     except Exception:
@@ -144,7 +138,6 @@ def main():
                 received = receive_one(engine)
                 sent = send_one(engine, config, provider)
             except Exception:
-                # No traceback: SQL parameters and provider errors may contain private content.
                 print("Operación pendiente de revisión; se reintentará la lectura de la cola.")
                 received = sent = False
             if not received and not sent:

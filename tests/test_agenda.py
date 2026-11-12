@@ -1,5 +1,3 @@
-"""Unified agenda on real PostgreSQL: bookings, appointments and blocks in studio-local days."""
-
 from datetime import date, datetime, timedelta
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -14,7 +12,6 @@ from jordy.config import settings
 ORIGIN = "http://127.0.0.1:8000"
 PASSWORD = "luz-de-tarde-en-el-jardin-2026"
 ZONE = ZoneInfo("America/Mexico_City")
-# A far-future window of its own inside the shared test database.
 DAY = date(2093, 3, 10) + timedelta(days=uuid4().int % 2000)
 
 
@@ -136,17 +133,15 @@ def test_normalized_items_of_every_type_ordered_by_start(client, studio):
     )
     assert blocked["resource_id"] == studio["resource"]
 
-    # A block spanning several days appears on each of them; the bookings do not.
     following = mine(fetch(client, DAY + timedelta(days=1), DAY + timedelta(days=1)), ids)
     assert [(item["type"], item["id"]) for item in following] == [("block", block)]
-    # Released blocks leave the agenda.
     assert client.post(f"/api/blocks/{block}/release").status_code == 200
     assert ("block", block) not in {(i["type"], i["id"]) for i in fetch(client, DAY, DAY).json()}
 
 
 def test_days_are_local_to_the_studio_and_cancelled_is_opt_in(client, studio):
     day = DAY + timedelta(days=5)
-    late = studio["book"](local(day, 23, 30))  # ends 00:30 the next local day
+    late = studio["book"](local(day, 23, 30))
     early = studio["book"](local(day + timedelta(days=1), 0, 45))
     cancelled = studio["book"](local(day, 11))
     assert client.post(f"/api/bookings/{cancelled}/cancel").status_code == 200
@@ -154,7 +149,7 @@ def test_days_are_local_to_the_studio_and_cancelled_is_opt_in(client, studio):
 
     assert [item["id"] for item in mine(fetch(client, day, day), ids)] == [late]
     next_day = mine(fetch(client, day + timedelta(days=1), day + timedelta(days=1)), ids)
-    assert [item["id"] for item in next_day] == [late, early]  # still running after midnight
+    assert [item["id"] for item in next_day] == [late, early]
     everything = mine(fetch(client, day, day, include_cancelled="true"), ids)
     assert [(item["id"], item["status"]) for item in everything] == [
         (cancelled, "cancelled"),

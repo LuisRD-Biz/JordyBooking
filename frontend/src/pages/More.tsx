@@ -5,7 +5,6 @@ import {useStudio} from '../app/context';
 import {navigate} from '../app/router';
 import {secondaryItems} from '../app/Shell';
 
-/** Mobile hub for everything that is not one of the three main tabs. */
 export function More({onLogout}: {onLogout: () => void}) {
   const {user, metrics, seasonVisible} = useStudio();
   return <div className="stack">

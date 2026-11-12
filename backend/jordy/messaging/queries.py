@@ -1,12 +1,9 @@
-"""Read predicates shared by the inbox and administrative reports."""
-
 from sqlalchemy import and_, select
 
 from jordy.models import Conversation, Message
 
 
 def needs_reply():
-    """A successful outbound at or after the latest inbound closes the pending reply."""
     answered = (
         select(Message.id)
         .where(

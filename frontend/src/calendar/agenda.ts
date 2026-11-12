@@ -17,7 +17,6 @@ export type AgendaItem = {
   location: string | null;
 };
 
-/** Visual category of an agenda item: one colour and one dot each. */
 export type Tone = 'pending' | 'confirmed' | 'appointment' | 'block' | 'cancelled';
 export const TONES: {tone: Tone; label: string}[] = [
   {tone: 'pending', label: 'Por aprobar'},
@@ -33,10 +32,6 @@ export function toneOf(item: AgendaItem): Tone {
   return item.status === 'pending_approval' ? 'pending' : 'confirmed';
 }
 
-/**
- * Items per studio-local day. Bookings and appointments belong to the day they start;
- * a block covers every day it touches.
- */
 export function byDay(items: AgendaItem[], zone: string): Map<string, AgendaItem[]> {
   const days = new Map<string, AgendaItem[]>();
   const add = (day: string, item: AgendaItem) => days.set(day, [...(days.get(day) || []), item]);
@@ -52,7 +47,6 @@ export function byDay(items: AgendaItem[], zone: string): Map<string, AgendaItem
 
 const cache = new Map<string, {revision: number; request: Promise<AgendaItem[]>}>();
 
-/** One request per calendar month and data revision, shared by every view that needs it. */
 function month(key: string, revision: number): Promise<AgendaItem[]> {
   const hit = cache.get(key);
   if (hit && hit.revision === revision) return hit.request;
@@ -62,7 +56,6 @@ function month(key: string, revision: number): Promise<AgendaItem[]> {
   return request;
 }
 
-/** Agenda of the visible month(s). Keeps the previous items on screen while loading or on error. */
 export function useAgenda(months: string[], revision: number) {
   const [items, setItems] = useState<AgendaItem[]>([]), [error, setError] = useState(''), [loading, setLoading] = useState(false);
   const [attempt, setAttempt] = useState(0);

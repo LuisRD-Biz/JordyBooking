@@ -11,10 +11,6 @@ import {Notes} from './Notes';
 type Tab = 'resumen' | 'notas' | 'contrato' | 'citas';
 const APPOINTMENT_STATUS: Record<string, string> = {scheduled: 'Agendada', completed: 'Realizada', cancelled: 'Cancelada'};
 
-/**
- * Everything about one booking, opened from its own route (#/reserva/:id): a bottom sheet on
- * phones and a side panel on desktop. The next action for its status stays fixed at the foot.
- */
 export function BookingSheet({id, onClose}: {id: number; onClose: () => void}) {
   const {zone, revision, open} = useStudio();
   const [summary, setSummary] = useState<Row | null>(null), [error, setError] = useState('');
@@ -24,14 +20,12 @@ export function BookingSheet({id, onClose}: {id: number; onClose: () => void}) {
     let active = true;
     api<Row>(`/api/bookings/${id}/summary`)
       .then(result => { if (active) { setSummary(result); setError(''); } })
-      // A failed refresh keeps the booking that was already on screen.
       .catch(err => { if (active) setError(`No se pudo ${summary ? 'actualizar' : 'abrir'} la reservación: ${err.message}`); });
     return () => { active = false; };
   }, [id, revision]);
 
   const booking: Row | undefined = summary?.booking, customer: Row | undefined = summary?.customer;
   const contract: Row | null = summary?.contract || null;
-  // What dialogs opened from here need to know about the booking.
   const row = booking && {...booking, customer_name: customer!.name, contract};
   const notes = noteCount ?? summary?.counts.notes ?? 0;
   const tabs: {id: Tab; label: string; count?: number}[] = [
@@ -95,14 +89,12 @@ export function BookingSheet({id, onClose}: {id: number; onClose: () => void}) {
   </Modal>;
 }
 
-/** The action that moves the booking forward, plus edit, reschedule and cancel while it is open. */
 function ActionBar({booking, onContract}: {booking: Row; onContract: () => void}) {
   const {open} = useStudio();
   const pending = booking.status === 'pending_approval';
   if (!pending && booking.status !== 'confirmed') return null;
   const needsContract = pending && booking.kind === 'event' && !booking.contract;
   const finished = new Date(booking.ends_at).getTime() < Date.now();
-  // An event with a contract keeps its date until the contract is reviewed.
   const locked = booking.kind === 'event' && !!booking.contract;
   return <footer className="action-bar">
     {needsContract && <button className="primary wide" onClick={onContract}><FileCheck2 size={18}/>Registrar contrato</button>}

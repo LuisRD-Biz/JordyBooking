@@ -115,7 +115,6 @@ class BlockInput(Input):
 
 class RescheduleInput(Input):
     starts_at: AwareDatetime
-    # Omit to keep the current place.
     location: Annotated[str | None, Field(min_length=1, max_length=500)] = None
 
 

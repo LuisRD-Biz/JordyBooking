@@ -38,7 +38,6 @@ export const TITLES: Record<string, string> = {
 
 const SECTIONS = new Set([HOME, 'clientes', 'oportunidades', 'mas']);
 
-/** The bottom-bar tab a route belongs to. */
 const tabOf = (name: string) => (SECTIONS.has(name) ? name : 'mas');
 
 function link(name: string, push = false) {

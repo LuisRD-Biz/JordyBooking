@@ -34,12 +34,10 @@ class MessagingSettings(BaseSettings):
     whatsapp_token_rotated: bool = False
     whatsapp_allowed_recipients: list[str] = Field(default_factory=list)
     whatsapp_recipient_bindings: list[RecipientBinding] = Field(default_factory=list)
-    # Only explicitly approved, zero-parameter templates in this first adapter.
     whatsapp_approved_templates: list[str] = Field(default_factory=list)
     whatsapp_max_webhook_bytes: int = Field(default=262144, ge=1024, le=1048576)
 
     def send_config_revision(self):
-        # Opaque comparison value: never persist/log credentials or raw configuration.
         data = self.model_dump(
             mode="json",
             exclude={

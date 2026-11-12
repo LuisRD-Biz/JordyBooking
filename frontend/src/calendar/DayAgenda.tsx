@@ -14,7 +14,6 @@ function statusText(item: AgendaItem) {
   return labels[item.status] || item.status;
 }
 
-/** "10:00 – 11:30", or how the item relates to this day when it spans several. */
 function hours(item: AgendaItem, day: string, zone: string) {
   const starts = dayKey(item.starts_at, zone) === day, ends = dayKey(new Date(item.ends_at).getTime() - 1, zone) === day;
   if (!starts && !ends) return {main: 'Todo', rest: 'el día'};
@@ -22,7 +21,6 @@ function hours(item: AgendaItem, day: string, zone: string) {
   return {main: fmt(item.starts_at, zone, 'HH:mm'), rest: ends ? fmt(item.ends_at, zone, 'HH:mm') : 'en adelante'};
 }
 
-/** Everything that happens on one day, in order, whatever its type. */
 export function DayAgenda({day, items}: {day: string; items: AgendaItem[]}) {
   const {zone, today, open, openBooking} = useStudio();
   const short = dayLabel(day, zone, 'd MMM');

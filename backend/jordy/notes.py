@@ -1,9 +1,3 @@
-"""Append-only notes on a booking, each signed by the account that wrote it.
-
-Notes are never edited or deleted: a correction is another note. That keeps the history
-trustworthy when several people (and later an assistant) write on the same booking.
-"""
-
 from datetime import datetime
 from typing import Annotated
 from uuid import UUID
@@ -37,11 +31,9 @@ class BookingNote(Base):
     )
     id: Mapped[int] = mapped_column(primary_key=True)
     booking_id: Mapped[int] = mapped_column(ForeignKey("bookings.id"))
-    # Null for access without an account (the desktop's local session or the admin key).
     author_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     body: Mapped[str] = mapped_column(String(BODY_MAX))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    # Optional client-chosen key so a retried request does not write the note twice.
     request_key: Mapped[UUID | None] = mapped_column(unique=True)
 
 
@@ -71,7 +63,6 @@ def output(note: BookingNote, author: str | None) -> NoteOutput:
 
 @router.get("/bookings/{identity}/notes", response_model=list[NoteOutput])
 def notes(identity: int, session: DB):
-    """Oldest first, so the list reads as a conversation."""
     require(session, Booking, identity)
     rows = session.execute(
         select(BookingNote, User.name)
@@ -92,7 +83,6 @@ def note_create(
     idempotency_key: Annotated[UUID | None, Header()] = None,
 ):
     with session.begin():
-        # The row lock also serializes two requests that carry the same key.
         require(session, Booking, identity, lock=True)
         author_id = session.info.get("actor_user_id")
         note = None

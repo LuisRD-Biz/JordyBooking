@@ -1,5 +1,3 @@
-"""Add isolated messaging storage and outbox dispatch topics."""
-
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql

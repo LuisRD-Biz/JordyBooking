@@ -38,14 +38,13 @@ def get_engine():
 
 @asynccontextmanager
 async def lifespan(app):
-    settings()  # Fail closed if no sufficiently strong administrative key is configured.
+    settings()
 
     async def summaries():
         while True:
             try:
                 await asyncio.to_thread(recover_summaries, get_engine())
             except Exception:
-                # No message text, SQL parameters or credentials in logs.
                 logger.warning("SUMMARY_RECOVERY_FAILED")
                 try:
 
@@ -97,7 +96,6 @@ app.include_router(document_router)
 
 
 def messaging_enabled():
-    # Runs before authentication: with the feature off these paths do not exist at all.
     if not settings().messaging_enabled:
         raise HTTPException(status_code=404, detail="Not Found")
 
@@ -113,7 +111,6 @@ def health():
 
 @app.get("/health/ready")
 def ready():
-    """No secrets or paths; identify this checkout before the launcher reuses a port."""
     root = Path(__file__).resolve().parents[2]
     instance = hashlib.sha256(str(root).casefold().encode()).hexdigest()[:24]
     try:

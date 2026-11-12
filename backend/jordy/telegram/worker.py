@@ -1,5 +1,3 @@
-"""Private Telegram worker. Run separately from the FastAPI server."""
-
 import logging
 import sys
 from contextlib import ExitStack
@@ -27,7 +25,6 @@ def main() -> int:
     if not settings.allowed_user_ids:
         print("La allowlist está vacía. No se inicia el bot.", file=sys.stderr)
         return 2
-    # httpx's INFO request log includes the full Telegram URL.
     for name in ("httpx", "httpcore"):
         logging.getLogger(name).setLevel(logging.WARNING)
     token = settings.bot_token.get_secret_value()

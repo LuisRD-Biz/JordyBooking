@@ -13,7 +13,6 @@ const TONE: Record<string, string> = {new: 'pending', contacted: 'pending', quot
 const CHANNELS = ['WhatsApp', 'Instagram', 'Teléfono', 'Recomendación', 'Otro'];
 const OPEN = (status: string) => !['won', 'lost', 'pending_booking'].includes(status);
 
-/** Sales opportunities: interest that does not reserve a date or hold resources. */
 export function Leads() {
   const {zone, metrics, revision} = useStudio();
   const [stage, setStage] = useState(''), [text, setText] = useState(''), [page, setPage] = useState(1);

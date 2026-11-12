@@ -1,5 +1,3 @@
-"""Browser sessions for the studio panel: e-mail and password, or opt-in local desktop access."""
-
 import ipaddress
 from functools import lru_cache
 from urllib.parse import urlparse
@@ -23,12 +21,10 @@ def secure_cookies() -> bool:
 
 
 def cookie_name() -> str:
-    # The __Host- prefix makes browsers refuse the cookie unless it is Secure, host-only and
-    # Path=/, so a sibling subdomain cannot plant or overwrite the session cookie.
     return "__Host-jordy_session" if secure_cookies() else "jordy_session"
 
 
-COOKIE = "jordy_session"  # Name over plain HTTP (local desktop and tests).
+COOKIE = "jordy_session"
 
 
 @lru_cache(maxsize=4)
@@ -37,7 +33,6 @@ def _engine(url: str):
 
 
 def auth_db() -> Session:
-    # Separate short session: authentication must not open the request's transaction.
     return Session(_engine(settings().database_url))
 
 
@@ -153,7 +148,6 @@ def login(data: Login, request: Request, response: Response):
         try:
             with db.begin():
                 user = accounts.authenticate(db, data.email, data.password.get_secret_value(), ip)
-                # Never reuse a pre-login cookie: prevents session fixation.
                 accounts.revoke_session(db, request.cookies.get(cookie_name()))
                 token = accounts.start_session(db, user, ip, request.headers.get("user-agent"))
                 profile = {
@@ -164,7 +158,6 @@ def login(data: Login, request: Request, response: Response):
                     "timezone": settings().studio_timezone,
                 }
         except (accounts.LoginRejected, accounts.LoginThrottled) as error:
-            # The failed attempt was added before the exception; persist it, then answer.
             with db.begin():
                 db.add(
                     accounts.LoginAttempt(

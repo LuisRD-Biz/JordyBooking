@@ -1,5 +1,3 @@
-"""Sales opportunities, immutable quotation versions and signature appointments."""
-
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 

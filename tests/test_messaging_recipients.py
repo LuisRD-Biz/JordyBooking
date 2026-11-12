@@ -1,5 +1,3 @@
-"""Explicit routing, no number transformations and no actual Graph requests."""
-
 from datetime import timedelta
 from uuid import uuid4
 
@@ -65,7 +63,6 @@ def test_binding_end_to_end_preserves_identity(wa, database, client):
     while send_one(database, wa, provider):
         pass
     assert provider.calls == 1
-    # Meta can acknowledge using the observed inbound wa_id.
     assert post(wa, status_payload(wa, external, "delivered")).status_code == 200
     drain(database)
     with Session(database) as session:

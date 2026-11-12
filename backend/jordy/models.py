@@ -248,8 +248,6 @@ class IdempotencyRecord(Base):
 
 
 class Conversation(Base):
-    """A channel identity owns one durable thread; customers can own many identities."""
-
     __tablename__ = "conversations"
     __table_args__ = (
         UniqueConstraint("channel", "account_id", "external_contact"),

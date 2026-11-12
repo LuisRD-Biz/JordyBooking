@@ -1,5 +1,3 @@
-"""Real Graph adapter; no network retry, no redirects, no provider prose in errors."""
-
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -83,11 +81,9 @@ class WhatsAppAdapter:
                         if isinstance(external_id, str) and 0 < len(external_id) <= 300:
                             return SendResult("accepted", external_id=external_id)
                         return SendResult("unknown", error_code="missing_message_id")
-                    # Explicit rejection is terminal; manual review instead of duplicate-risk retry.
                     status = "failed" if 400 <= response.status_code < 500 else "unknown"
                     error = data.get("error") if isinstance(data, dict) else None
                     code = error.get("code") if isinstance(error, dict) else None
-                    # Numeric Meta codes only; never copy message/details/trace IDs.
                     suffix = f"_meta_{code}" if type(code) is int and 0 <= code <= 999999999 else ""
                     return SendResult(status, error_code=f"http_{response.status_code}{suffix}")
         except (httpx.HTTPError, OSError):

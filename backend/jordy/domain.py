@@ -1,5 +1,3 @@
-"""Framework-independent scheduling and booking rules."""
-
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -22,7 +20,6 @@ def day_bounds(day: date, timezone: str, days: int = 1) -> tuple[datetime, datet
 
 
 def christmas_slots(day, timezone: str) -> list[datetime]:
-    """Campaign template: weekdays in October/November, six two-hour slots."""
     if day.month not in {10, 11} or day.weekday() >= 5:
         return []
     zone = ZoneInfo(timezone)
@@ -40,7 +37,6 @@ class AvailabilityService:
     def check_availability(
         requirements: dict[str, int], candidates: list[Candidate]
     ) -> dict[int, str] | None:
-        """Bipartite matching, so a multi-skilled person is never counted twice."""
         slots = [role for role, count in requirements.items() for _ in range(count)]
         slots.sort(key=lambda role: sum(role in c.capabilities for c in candidates))
         assigned: dict[int, int] = {}

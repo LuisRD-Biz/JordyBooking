@@ -5,7 +5,6 @@ import {useStudio} from '../app/context';
 import {fmt} from '../lib/dates';
 import type {Row} from '../shared';
 
-/** Christmas campaign: six fixed two-hour slots on weekdays of October and November. */
 export function Season() {
   const {packages, zone, selectedDay, open} = useStudio();
   const [day, setDay] = useState(selectedDay), [packageId, setPackageId] = useState('');

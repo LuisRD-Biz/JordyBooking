@@ -1,5 +1,3 @@
-"""Worker lifecycle tests. No Telegram traffic or PostgreSQL connection."""
-
 import subprocess
 import sys
 from contextlib import nullcontext

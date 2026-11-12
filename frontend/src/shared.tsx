@@ -41,10 +41,6 @@ export function FieldInput({field}: {field: Field}) {
   </label>;
 }
 
-/**
- * Modal dialog: a bottom sheet on phones, a centred card (or a side panel with `side`) on
- * larger screens. It owns a history entry, so the phone's "back" closes it.
- */
 export function Modal({title, subtitle, children, onClose, side = false, header, routed = false}: {title: string; subtitle?: string; children: React.ReactNode; onClose: () => void; side?: boolean; header?: React.ReactNode; routed?: boolean}) {
   const ref = useRef<HTMLDialogElement>(null);
   useBackClose(onClose, !routed);
@@ -82,7 +78,6 @@ export function Editor({title, subtitle, fields, onSave, onClose, children, save
         {error && <div className="error" role="alert"><AlertCircle size={18}/>{error}</div>}
       </div>
       <footer className="modal-footer">
-        {/* Leaving a form is not destructive: outlined. The filled red is for what cannot be undone. */}
         <button type="button" className={danger ? 'secondary' : 'danger-btn'} onClick={onClose} disabled={busy}>{danger ? 'No, volver' : 'Cancelar'}</button>
         <button className={danger ? 'danger-btn solid' : tone} disabled={busy}>{busy ? 'Guardando…' : saveLabel}</button>
       </footer>

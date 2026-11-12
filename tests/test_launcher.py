@@ -1,5 +1,3 @@
-"""Failure/reuse tests never start or stop an operational process."""
-
 import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
@@ -49,7 +47,7 @@ def test_foreign_database_port_is_never_touched(launch, monkeypatch):
     launch.pg_control.return_value = 3
     with pytest.raises(RuntimeError, match="55433"):
         launch.start()
-    assert launch.pg_control.call_count == 1  # status only
+    assert launch.pg_control.call_count == 1
     launch.subprocess.Popen.assert_not_called()
 
 

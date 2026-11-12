@@ -76,7 +76,7 @@ def pending(reads: AdminReads, args: list[str]) -> str:
         lines.append("Sin solicitudes pendientes.")
     if result.more_bookings:
         lines.append("Hay más solicitudes en el panel.")
-    if result.conversations is None:  # Messaging is disabled: nothing to follow up.
+    if result.conversations is None:
         return "\n".join(lines)
     lines.append("Conversaciones pendientes de seguimiento")
     for item in result.conversations:

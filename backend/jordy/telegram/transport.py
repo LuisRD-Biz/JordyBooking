@@ -15,7 +15,6 @@ class ApiFailure(Exception):
 
 
 def call(client: httpx.Client, method: str, **params):
-    # Never propagate raw HTTP exceptions: their URL contains the token.
     try:
         response = client.post(method, json=params)
     except httpx.RequestError:

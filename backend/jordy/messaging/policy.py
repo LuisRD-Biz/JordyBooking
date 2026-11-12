@@ -1,5 +1,3 @@
-"""Stable internal categories; no provider prose or identifying values in errors."""
-
 import re
 
 from jordy.domain import RuleViolation
@@ -39,7 +37,6 @@ ERRORS = {
 
 
 def error_diagnostic(code):
-    """Describe an individual attempt; never infer current credential validity from history."""
     if not code:
         return None
     if code == "http_401_meta_190" or code == "meta_190":
@@ -70,7 +67,6 @@ class SendPolicyViolation(RuleViolation):
 
 
 def resolve_recipient(config, conversation):
-    """Explicit bindings are scoped to WABA + sender. No country-number heuristics."""
     bindings = [
         b
         for b in config.whatsapp_recipient_bindings

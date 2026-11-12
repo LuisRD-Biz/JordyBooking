@@ -19,14 +19,12 @@ def test_upgrade_downgrade_upgrade_isolated_schema(database, monkeypatch):
         settings.cache_clear()
         try:
             config = Config("alembic.ini")
-            # Earlier migrations support rollback when the database is empty.
             command.upgrade(config, "7b41c092a661")
             assert "resource_occupancies" in inspect(engine).get_table_names(schema=schema)
             command.downgrade(config, "base")
             assert "bookings" not in inspect(engine).get_table_names(schema=schema)
             command.upgrade(config, "head")
             assert "bookings" in inspect(engine).get_table_names(schema=schema)
-            # Commercial history deliberately cannot be removed by downgrade.
             with engine.begin() as connection:
                 connection.execute(
                     text(

@@ -15,7 +15,6 @@ PASSWORD = "luz-de-tarde-en-el-jardin-2026"
 
 @pytest.fixture
 def browser(client, monkeypatch):
-    """Cookie-only client with its own synthetic client IP, isolated from other tests."""
     client.headers.pop("X-Admin-Key", None)
     monkeypatch.setattr(settings(), "client_ip_header", "X-Test-Client-IP")
     client.headers["X-Test-Client-IP"] = f"198.51.100.{uuid4().int % 250 + 1}"
@@ -40,7 +39,7 @@ def test_login_logout_and_server_side_revocation(browser, database):
     assert browser.get("/api/bookings").status_code == 401
     assert login(browser, email, headers={"Origin": "https://evil.invalid"}).status_code == 403
 
-    response = login(browser, email.upper())  # e-mail is case-insensitive
+    response = login(browser, email.upper())
     assert response.status_code == 200
     cookie = response.headers["set-cookie"]
     assert cookie.startswith(f"{COOKIE}=")
@@ -61,7 +60,7 @@ def test_login_logout_and_server_side_revocation(browser, database):
 
     assert browser.post("/auth/logout").status_code == 200
     assert browser.get("/api/bookings").status_code == 401
-    browser.cookies.set(COOKIE, token)  # a copied cookie is useless after logout
+    browser.cookies.set(COOKIE, token)
     assert browser.get("/api/bookings").status_code == 401
 
 
@@ -80,10 +79,8 @@ def test_lockout_after_five_failures_even_with_correct_password(browser, databas
     locked = login(browser, email)
     assert locked.status_code == 429
     assert locked.headers["retry-after"] == "900"
-    # Moving to another IP does not help: the e-mail itself is throttled.
     browser.headers["X-Test-Client-IP"] = "203.0.113.77"
     assert login(browser, email).status_code == 429
-    # Unknown e-mails lock the same way, so lockouts do not reveal real accounts.
     ghost = f"ghost-{uuid4().hex[:8]}@example.invalid"
     for _ in range(accounts.MAX_FAILURES_PER_EMAIL):
         assert login(browser, ghost, "wrong-password-123").status_code == 401
@@ -122,7 +119,7 @@ def test_session_fixation_forged_and_idle_sessions_are_rejected(browser, databas
     assert token != "attacker-chosen-session-value"
     browser.cookies.clear()
     browser.cookies.set(COOKIE, "attacker-chosen-session-value")
-    assert browser.get("/api/bookings").status_code == 401  # the planted value never works
+    assert browser.get("/api/bookings").status_code == 401
     browser.cookies.clear()
     browser.cookies.set(COOKIE, token)
     assert browser.get("/api/bookings").status_code == 200
@@ -166,11 +163,11 @@ def test_password_change_rotates_other_sessions(browser, database):
     assert weak.status_code == 422
     ok = browser.post(change, json={"current_password": PASSWORD, "new_password": new})
     assert ok.status_code == 200
-    assert browser.get("/api/bookings").status_code == 200  # this session survives
+    assert browser.get("/api/bookings").status_code == 200
 
     current = browser.cookies.get(COOKIE)
     browser.cookies.set(COOKIE, first)
-    assert browser.get("/api/bookings").status_code == 401  # the other one was revoked
+    assert browser.get("/api/bookings").status_code == 401
     browser.cookies.set(COOKIE, current)
     assert browser.post("/auth/logout").status_code == 200
     assert login(browser, email).status_code == 401

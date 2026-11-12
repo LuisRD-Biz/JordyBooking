@@ -17,8 +17,6 @@ function External({href, className, children}: {href: string; className: string;
 
 type Open = (photos: Photograph[], index: number) => void;
 
-/** Landscape photos take the full row; portraits go in pairs so nothing is cropped on a phone.
-    A portrait left without a partner becomes a wide tile instead of leaving a hole. */
 function Gallery({photos, open}: {photos: Photograph[]; open: Open}) {
   const portraits = photos.filter(p => p.orientation === 'portrait');
   const lonely = portraits.length % 2 ? portraits[portraits.length - 1].id : '';

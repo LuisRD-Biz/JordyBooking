@@ -1,5 +1,3 @@
-"""Start only this project's local services; never initialize or migrate a database."""
-
 import ctypes
 import hashlib
 import json
@@ -81,7 +79,7 @@ def configuration():
         )
     if not (ROOT / "frontend/dist/index.html").is_file():
         raise RuntimeError(
-            "Falta preparar el panel de React. Consulta docs/panel.md para compilarlo."
+            "Falta preparar el panel de React. Ejecuta pnpm run build en frontend."
         )
     try:
         import psycopg  # noqa: F401
@@ -90,7 +88,7 @@ def configuration():
         from sqlalchemy.engine import make_url
     except ImportError as exc:
         raise RuntimeError(
-            "Faltan dependencias. Consulta la instalación en docs/panel.md."
+            "Faltan dependencias. Ejecuta uv sync --locked."
         ) from exc
     config = dotenv_values(ROOT / ".env")
     url = make_url(config.get("DATABASE_URL", ""))
@@ -129,7 +127,7 @@ def database_ready(url, cluster):
         expected = ScriptDirectory.from_config(config).get_current_head()
         current = connection.execute("SELECT version_num FROM alembic_version").fetchone()[0]
         if expected != current:
-            raise RuntimeError("La base necesita actualizarse. Consulta docs/panel.md.")
+            raise RuntimeError("La base necesita actualizarse. Ejecuta alembic upgrade head.")
 
 
 def pg_control(pg, cluster, *arguments):
@@ -221,7 +219,6 @@ def start():
         )
     except Exception:
         if server and server.poll() is None:
-            # Only the process tree created here, never a process selected by port or name.
             if os.name == "nt":
                 subprocess.run(
                     ["taskkill", "/PID", str(server.pid), "/T", "/F"],
@@ -270,7 +267,6 @@ def main():
                 lock.seek(0)
                 msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
     except Exception as exc:
-        # Driver exception arguments can contain credentials; only our messages are displayed.
         message = (
             str(exc)
             if isinstance(exc, RuntimeError)

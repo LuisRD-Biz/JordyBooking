@@ -70,12 +70,11 @@ def test_historical_errors_do_not_become_current_config_alerts(wa, database, cli
         job.status = "failed"
     current = client.get("/api/messaging/config").json()
     assert current["provider_review"]["category"] == "credential"
-    assert current["send_blocker_codes"] == []  # No claim of local misconfiguration.
+    assert current["send_blocker_codes"] == []
     original_token = wa.whatsapp_access_token
     wa.whatsapp_access_token = SecretStr("different-test-credential")
     assert client.get("/api/messaging/config").json()["provider_review"] is None
     wa.whatsapp_access_token = original_token
-    # Preserve old attempt; a later successful response clears the unanswered indicator.
     with Session(database) as s, s.begin():
         previous = s.get(Message, message["id"])
         delivered = Message(

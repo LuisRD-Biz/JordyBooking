@@ -1,5 +1,3 @@
-"""Synthetic studio fixtures for the running jordy-lab Compose project."""
-
 import os
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -28,8 +26,6 @@ def seed(engine, zone):
         ):
             return False
 
-        # The application handlers own their sessions' transactions. Savepoints keep
-        # every handler inside this single commit, including audit and outbox records.
         with Session(connection, join_transaction_mode="create_savepoint") as db:
             populate(db, zone)
     return True
@@ -132,7 +128,6 @@ def populate(db, zone):
         db,
     )
 
-    # Opaque demo identities can't route to a phone. Process locally without a webhook or a send.
     with db.begin():
         process_incoming(
             db,

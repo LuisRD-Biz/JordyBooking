@@ -12,7 +12,6 @@ const RANGES: {value: Range; label: string}[] = [{value: 'all', label: 'Todas'},
 const STATUS: Record<string, string> = {scheduled: 'Agendada', completed: 'Realizada', cancelled: 'Cancelada'};
 const KIND: Record<string, string> = {contract: 'Firma de contrato', meeting: 'Reunión'};
 
-/** Search across meetings and contract signings; they also appear on the calendar. */
 export function Appointments() {
   const {zone, today, revision, open} = useStudio();
   const [range, setRange] = useState<Range>('all'), [text, setText] = useState(''), [page, setPage] = useState(1);
