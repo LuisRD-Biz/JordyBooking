@@ -2,12 +2,12 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from jordy import commercial_models  # noqa: F401 — register commercial metadata
-from jordy.config import settings
+from jordy.config import StudioDatabaseSettings
 from jordy.models import Base
 
 
 def run():
-    url = settings().database_url
+    url = StudioDatabaseSettings().database_url
     if context.is_offline_mode():
         context.configure(url=url, target_metadata=Base.metadata, literal_binds=True)
         with context.begin_transaction():

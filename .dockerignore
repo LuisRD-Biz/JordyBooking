@@ -1,0 +1,20 @@
+# Only the files used by the build may leave the checkout.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!uv.lock
+!alembic.ini
+!backend/**/*.py
+!migrations/env.py
+!migrations/script.py.mako
+!migrations/versions/*.py
+!docker/migrate.py
+!frontend/package.json
+!frontend/pnpm-lock.yaml
+!frontend/pnpm-workspace.yaml
+!frontend/index.html
+!frontend/tsconfig.json
+!frontend/src/**/*.ts
+!frontend/src/**/*.tsx
+!frontend/src/**/*.css

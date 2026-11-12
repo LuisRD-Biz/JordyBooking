@@ -20,6 +20,10 @@ con lugar acordado y eventos con contrato firmado registrado.
 
 ## Desarrollo local
 
+Para ejecutar **panel, FastAPI y PostgreSQL 18 con Docker Desktop**, sigue la
+[guía de Compose para Windows](docs/docker.md). Incluye la preparación explícita de Alembic,
+volúmenes privados y una prueba de persistencia en un proyecto desechable.
+
 Para abrir el panel en Windows consulta [la guía del panel](docs/panel.md).
 La instalación local dispone del acceso directo **Jordy Studio**. Incluye CRM,
 cotizaciones versionadas, citas de firma, documentos privados y búsquedas paginadas.
