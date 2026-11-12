@@ -8,15 +8,29 @@ KEY = "test-only-admin-key-with-at-least-32-chars"
 ORIGIN = "http://127.0.0.1:8000"
 
 
-def test_browser_login_cookie_and_csrf(client):
+def test_browser_login_cookie_and_csrf(client, database):
+    from uuid import uuid4
+
+    from sqlalchemy.orm import Session
+
+    from jordy.accounts import create_user
+
+    email = f"panel-{uuid4().hex[:8]}@example.invalid"
+    password = "frase-de-prueba-para-el-panel"
+    with Session(database) as session, session.begin():
+        create_user(session, email, "Panel Test", password)
+    credentials = {"email": email, "password": password}
     client.headers.pop("X-Admin-Key")
     assert client.get("/api/bookings").status_code == 401
-    assert client.post("/auth/login", json={"key": KEY}).status_code == 403
-    response = client.post("/auth/login", json={"key": KEY}, headers={"Origin": ORIGIN})
+    assert (
+        client.post("/auth/login", json={"key": KEY}, headers={"Origin": ORIGIN}).status_code == 422
+    )
+    assert client.post("/auth/login", json=credentials).status_code == 403
+    response = client.post("/auth/login", json=credentials, headers={"Origin": ORIGIN})
     assert response.status_code == 200
     assert "HttpOnly" in response.headers["set-cookie"]
     assert "SameSite=strict" in response.headers["set-cookie"]
-    assert KEY not in response.text
+    assert password not in response.text
     assert client.get("/api/bookings").status_code == 200
     data = {"name": "Browser Test", "contact": "synthetic@example.invalid"}
     assert client.post("/api/customers", json=data).status_code == 403

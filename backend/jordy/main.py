@@ -69,6 +69,21 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Jordy Studio — Reservaciones", version="0.1.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("X-Frame-Options", "DENY")
+    headers.setdefault("Referrer-Policy", "same-origin")
+    headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+    if request.url.path.startswith(("/api/", "/auth/")):
+        headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
 app.include_router(router)
 app.include_router(auth_router)
 app.include_router(crm_router)

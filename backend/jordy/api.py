@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from jordy import services
-from jordy.auth import same_origin, valid_session
+from jordy.auth import current_principal, same_origin
 from jordy.config import settings
 from jordy.customers import save_customer
 from jordy.db import get_session
@@ -41,12 +41,20 @@ key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
 
 
 def authenticate(request: Request, key: Annotated[str | None, Depends(key_header)]):
-    if valid_session(request):
+    principal = current_principal(request)
+    if principal is not None:
+        # Administrative API for now; employee and client scopes will get their own routers.
+        if principal.role != "admin":
+            raise HTTPException(status_code=403, detail="Tu cuenta no tiene acceso a esta sección.")
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
             same_origin(request)
         return
     expected = settings().admin_api_key.get_secret_value()
-    if key is None or not secrets.compare_digest(key.encode(), expected.encode()):
+    if (
+        not settings().admin_key_header
+        or key is None
+        or not secrets.compare_digest(key.encode(), expected.encode())
+    ):
         raise HTTPException(status_code=401, detail="Acceso administrativo requerido.")
 
 

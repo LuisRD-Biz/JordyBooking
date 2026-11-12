@@ -1,7 +1,7 @@
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from jordy import commercial_models  # noqa: F401 — register commercial metadata
+from jordy import accounts, commercial_models  # noqa: F401 — register model metadata
 from jordy.config import StudioDatabaseSettings
 from jordy.models import Base
 

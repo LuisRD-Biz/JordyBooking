@@ -1,24 +1,60 @@
-"""Administrative browser sessions. Local desktop access is explicitly opt-in."""
+"""Browser sessions for the studio panel: e-mail and password, or opt-in local desktop access."""
 
-import hashlib
-import hmac
-import secrets
-import time
+import ipaddress
+from functools import lru_cache
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, Field, SecretStr
+from sqlalchemy.orm import Session
 
+from jordy import accounts
+from jordy.accounts import Principal
 from jordy.config import settings
+from jordy.db import build_engine
 
 router = APIRouter(prefix="/auth", tags=["Panel"])
-COOKIE = "jordy_session"
-LIFETIME = 8 * 3600
+GENERIC_LOGIN_ERROR = "Correo o contraseña incorrectos."
+THROTTLED_ERROR = "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo."
+
+
+def secure_cookies() -> bool:
+    return settings().panel_origin.startswith("https:")
+
+
+def cookie_name() -> str:
+    # The __Host- prefix makes browsers refuse the cookie unless it is Secure, host-only and
+    # Path=/, so a sibling subdomain cannot plant or overwrite the session cookie.
+    return "__Host-jordy_session" if secure_cookies() else "jordy_session"
+
+
+COOKIE = "jordy_session"  # Name over plain HTTP (local desktop and tests).
+
+
+@lru_cache(maxsize=4)
+def _engine(url: str):
+    return build_engine(url)
+
+
+def auth_db() -> Session:
+    # Separate short session: authentication must not open the request's transaction.
+    return Session(_engine(settings().database_url))
 
 
 def same_origin(request: Request):
     if request.headers.get("origin") != settings().panel_origin:
         raise HTTPException(403, "Origen de la solicitud no permitido.")
+
+
+def client_ip(request: Request) -> str:
+    header = settings().client_ip_header
+    if header:
+        value = (request.headers.get(header) or "").strip()
+        try:
+            return str(ipaddress.ip_address(value))
+        except ValueError:
+            pass
+    return request.client.host if request.client else "unknown"
 
 
 def local_allowed(request: Request) -> bool:
@@ -31,47 +67,61 @@ def local_allowed(request: Request) -> bool:
     )
 
 
-def signature(value: str) -> str:
-    return hmac.new(
-        settings().admin_api_key.get_secret_value().encode(), value.encode(), hashlib.sha256
-    ).hexdigest()
+def current_principal(request: Request) -> Principal | None:
+    cached = getattr(request.state, "principal", False)
+    if cached is not False:
+        return cached
+    token = request.cookies.get(cookie_name())
+    principal = None
+    if token:
+        with auth_db() as db, db.begin():
+            principal = accounts.resolve_session(db, token)
+    request.state.principal = principal
+    return principal
 
 
 def valid_session(request: Request) -> bool:
-    token = request.cookies.get(COOKIE, "")
-    try:
-        expiry, nonce, signed = token.split(".")
-        return time.time() < int(expiry) <= time.time() + LIFETIME and hmac.compare_digest(
-            signature(f"{expiry}.{nonce}"), signed
-        )
-    except (ValueError, TypeError):
-        return False
+    return current_principal(request) is not None
 
 
-def issue(response: Response):
-    value = f"{int(time.time()) + LIFETIME}.{secrets.token_hex(16)}"
+def _set_cookie(response: Response, token: str):
     response.set_cookie(
-        COOKIE,
-        f"{value}.{signature(value)}",
+        cookie_name(),
+        token,
         httponly=True,
-        secure=settings().panel_origin.startswith("https:"),
+        secure=secure_cookies(),
         samesite="strict",
-        max_age=LIFETIME,
+        max_age=int(accounts.SESSION_LIFETIME.total_seconds()),
         path="/",
     )
-    return {"name": "Jordy", "timezone": settings().studio_timezone}
+
+
+def _profile(principal: Principal) -> dict:
+    return {
+        "name": principal.name,
+        "email": principal.email,
+        "role": principal.role,
+        "local": principal.user_id is None,
+        "timezone": settings().studio_timezone,
+    }
+
+
+def _no_store(response: Response):
+    response.headers["Cache-Control"] = "no-store"
 
 
 @router.get("/config")
 def config(request: Request):
-    return {"local_access": local_allowed(request)}
+    return {"local_access": local_allowed(request), "method": "password"}
 
 
 @router.get("/session")
-def session(request: Request):
-    if not valid_session(request):
+def session(request: Request, response: Response):
+    _no_store(response)
+    principal = current_principal(request)
+    if principal is None:
         raise HTTPException(401, "Inicia sesión para continuar.")
-    return {"name": "Jordy", "timezone": settings().studio_timezone}
+    return _profile(principal)
 
 
 @router.post("/local")
@@ -79,25 +129,105 @@ def local_login(request: Request, response: Response):
     same_origin(request)
     if not local_allowed(request):
         raise HTTPException(403, "El acceso local no está habilitado.")
-    return issue(response)
+    with auth_db() as db, db.begin():
+        accounts.revoke_session(db, request.cookies.get(cookie_name()))
+        token = accounts.start_session(
+            db, None, client_ip(request), request.headers.get("user-agent")
+        )
+    _set_cookie(response, token)
+    _no_store(response)
+    return _profile(Principal(0, None, "Acceso local", None, "admin"))
 
 
 class Login(BaseModel):
-    key: SecretStr
+    email: str = Field(min_length=3, max_length=254)
+    password: SecretStr = Field(min_length=1, max_length=accounts.PASSWORD_MAX)
 
 
 @router.post("/login")
 def login(data: Login, request: Request, response: Response):
     same_origin(request)
-    if not secrets.compare_digest(
-        data.key.get_secret_value().encode(), settings().admin_api_key.get_secret_value().encode()
-    ):
-        raise HTTPException(401, "La clave de acceso no es correcta.")
-    return issue(response)
+    _no_store(response)
+    ip = client_ip(request)
+    with auth_db() as db:
+        try:
+            with db.begin():
+                user = accounts.authenticate(db, data.email, data.password.get_secret_value(), ip)
+                # Never reuse a pre-login cookie: prevents session fixation.
+                accounts.revoke_session(db, request.cookies.get(cookie_name()))
+                token = accounts.start_session(db, user, ip, request.headers.get("user-agent"))
+                profile = {
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role,
+                    "local": False,
+                    "timezone": settings().studio_timezone,
+                }
+        except (accounts.LoginRejected, accounts.LoginThrottled) as error:
+            # The failed attempt was added before the exception; persist it, then answer.
+            with db.begin():
+                db.add(
+                    accounts.LoginAttempt(
+                        email=accounts.normalize_email(data.email),
+                        ip=ip,
+                        succeeded=False,
+                        created_at=accounts.now(),
+                    )
+                )
+            if isinstance(error, accounts.LoginThrottled):
+                raise HTTPException(429, THROTTLED_ERROR, headers={"Retry-After": "900"})
+            raise HTTPException(401, GENERIC_LOGIN_ERROR)
+    _set_cookie(response, token)
+    return profile
 
 
 @router.post("/logout")
 def logout(request: Request, response: Response):
     same_origin(request)
-    response.delete_cookie(COOKIE, path="/")
+    _no_store(response)
+    with auth_db() as db, db.begin():
+        accounts.revoke_session(db, request.cookies.get(cookie_name()))
+    response.delete_cookie(cookie_name(), path="/", secure=secure_cookies(), httponly=True)
+    return {"ok": True}
+
+
+class PasswordChange(BaseModel):
+    current_password: SecretStr = Field(min_length=1, max_length=accounts.PASSWORD_MAX)
+    new_password: SecretStr = Field(min_length=1, max_length=accounts.PASSWORD_MAX)
+
+
+@router.post("/password")
+def change_password(data: PasswordChange, request: Request, response: Response):
+    same_origin(request)
+    _no_store(response)
+    principal = current_principal(request)
+    if principal is None:
+        raise HTTPException(401, "Inicia sesión para continuar.")
+    if principal.user_id is None:
+        raise HTTPException(403, "El acceso local no tiene contraseña.")
+    with auth_db() as db:
+        try:
+            with db.begin():
+                user = db.get(accounts.User, principal.user_id)
+                accounts.authenticate(
+                    db, user.email, data.current_password.get_secret_value(), client_ip(request)
+                )
+                accounts.set_password(
+                    db, user, data.new_password.get_secret_value(), principal.session_id
+                )
+        except (accounts.LoginRejected, accounts.LoginThrottled) as error:
+            with db.begin():
+                db.add(
+                    accounts.LoginAttempt(
+                        email=principal.email or "",
+                        ip=client_ip(request),
+                        succeeded=False,
+                        created_at=accounts.now(),
+                    )
+                )
+            if isinstance(error, accounts.LoginThrottled):
+                raise HTTPException(429, THROTTLED_ERROR, headers={"Retry-After": "900"})
+            raise HTTPException(401, "La contraseña actual no es correcta.")
+        except accounts.PasswordRejected as error:
+            raise HTTPException(422, str(error))
     return {"ok": True}
